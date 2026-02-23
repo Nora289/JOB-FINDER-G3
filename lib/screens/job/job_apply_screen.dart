@@ -3,7 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:job_finder/config/theme.dart';
-import 'package:job_finder/providers/job_provider.dart';
+import 'package:job_finder/providers/auth_provider.dart';
+import 'package:job_finder/widgets/user_avatar.dart';
 
 class JobApplyScreen extends StatefulWidget {
   final String jobId;
@@ -15,20 +16,31 @@ class JobApplyScreen extends StatefulWidget {
 }
 
 class _JobApplyScreenState extends State<JobApplyScreen> {
-  final _coverLetterController = TextEditingController();
-  String? _selectedFileName;
+  final _messageController = TextEditingController();
+  int _selectedProfileIndex = 0;
+  int _selectedResumeIndex = 0;
   bool _isSubmitting = false;
+
+  final List<Map<String, String>> _profiles = [
+    {'name': 'Chem Bunjok', 'subtitle': 'job finder'},
+    {'name': 'Slv Chanbormey', 'subtitle': 'job finder'},
+  ];
+
+  final List<String> _resumes = ['Chem Bunjok'];
 
   @override
   void dispose() {
-    _coverLetterController.dispose();
+    _messageController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final jobProvider = context.watch<JobProvider>();
-    final job = jobProvider.getJobById(widget.jobId);
+    final auth = context.watch<AuthProvider>();
+    if (auth.userName.isNotEmpty && _profiles.isNotEmpty) {
+      _profiles[0]['name'] = auth.userName;
+      _resumes[0] = auth.userName;
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -36,200 +48,249 @@ class _JobApplyScreenState extends State<JobApplyScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
+          icon: const Icon(
+            Icons.arrow_back_ios,
+            size: 20,
+            color: AppColors.textPrimary,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Apply for Job',
+          'Apply Now',
           style: GoogleFonts.poppins(
+            fontSize: 17,
             fontWeight: FontWeight.w600,
             color: AppColors.textPrimary,
           ),
         ),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Job info card
-            if (job != null)
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.background,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Padding(
-                          padding: const EdgeInsets.all(4),
-                          child: Image.asset(
-                            job.companyLogo,
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) =>
-                                const Icon(
-                                  Icons.business,
-                                  color: AppColors.primary,
-                                ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            job.title,
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          Text(
-                            job.companyName,
-                            style: GoogleFonts.poppins(
-                              fontSize: 13,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            const SizedBox(height: 24),
-            // Cover Letter
+            const SizedBox(height: 20),
+
+            // ── Select a profile ──
             Text(
-              'Cover Letter',
+              'Select a profile',
               style: GoogleFonts.poppins(
-                fontSize: 16,
+                fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
+            Row(
+              children: List.generate(_profiles.length, (index) {
+                final profile = _profiles[index];
+                final isSelected = _selectedProfileIndex == index;
+                return GestureDetector(
+                  onTap: () => setState(() => _selectedProfileIndex = index),
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 20),
+                    child: Column(
+                      children: [
+                        Stack(
+                          children: [
+                            UserAvatar(
+                              name: profile['name']!,
+                              radius: 30,
+                              fontSize: 16,
+                            ),
+                            if (isSelected)
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: Container(
+                                  width: 22,
+                                  height: 22,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.success,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: const Icon(
+                                    Icons.check,
+                                    size: 12,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          profile['name']!,
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        Text(
+                          profile['subtitle']!,
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            color: AppColors.textHint,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ),
+            const SizedBox(height: 28),
+
+            // ── Select a resume ──
+            Text(
+              'Select a resume',
+              style: GoogleFonts.poppins(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: List.generate(_resumes.length, (index) {
+                final isSelected = _selectedResumeIndex == index;
+                return GestureDetector(
+                  onTap: () => setState(() => _selectedResumeIndex = index),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColors.primary.withValues(alpha: 0.1)
+                          : Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isSelected
+                            ? AppColors.primary
+                            : Colors.grey.shade300,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (isSelected)
+                          Container(
+                            width: 18,
+                            height: 18,
+                            margin: const EdgeInsets.only(right: 6),
+                            decoration: const BoxDecoration(
+                              color: AppColors.success,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.check,
+                              size: 12,
+                              color: Colors.white,
+                            ),
+                          ),
+                        Text(
+                          _resumes[index],
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: isSelected
+                                ? AppColors.primary
+                                : AppColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ),
+            const SizedBox(height: 28),
+
+            // ── Leave Your Message (Optional) ──
+            RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: 'Leave Your Message  ',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  TextSpan(
+                    text: '(Optional)',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.textHint,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
             TextFormField(
-              controller: _coverLetterController,
-              maxLines: 6,
+              controller: _messageController,
+              maxLines: 5,
+              style: GoogleFonts.poppins(fontSize: 14),
               decoration: InputDecoration(
-                hintText: 'Write your cover letter here...',
+                hintText: 'Dear Hiring Manager,.....',
+                hintStyle: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: AppColors.textHint,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppColors.divider),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppColors.divider),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(
                     color: AppColors.primary,
-                    width: 2,
+                    width: 1.5,
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            // Resume/CV upload
-            Text(
-              'Resume / CV',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            GestureDetector(
-              onTap: () {
-                setState(() {
-                  _selectedFileName = 'my_resume.pdf';
-                });
-              },
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: AppColors.divider,
-                    style: BorderStyle.solid,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  children: [
-                    Icon(
-                      _selectedFileName != null
-                          ? Icons.description
-                          : Icons.cloud_upload_outlined,
-                      size: 48,
-                      color: _selectedFileName != null
-                          ? AppColors.primary
-                          : AppColors.textHint,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _selectedFileName ?? 'Upload your CV/Resume',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: _selectedFileName != null
-                            ? AppColors.textPrimary
-                            : AppColors.textSecondary,
-                        fontWeight: _selectedFileName != null
-                            ? FontWeight.w500
-                            : FontWeight.normal,
-                      ),
-                    ),
-                    if (_selectedFileName == null) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        'PDF, DOC up to 5MB',
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: AppColors.textHint,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
+                contentPadding: const EdgeInsets.all(16),
               ),
             ),
             const SizedBox(height: 32),
-            // Submit button
+
+            // ── Apply Now button ──
             SizedBox(
               width: double.infinity,
-              height: 52,
+              height: 54,
               child: ElevatedButton(
                 onPressed: _isSubmitting
                     ? null
                     : () {
                         setState(() => _isSubmitting = true);
+                        final router = GoRouter.of(context);
                         Future.delayed(const Duration(seconds: 1), () {
                           if (!mounted) return;
-                          // ignore: use_build_context_synchronously
-                          context.go('/apply-success');
+                          router.go('/apply-success');
                         });
                       },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
+                  elevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(30),
                   ),
                 ),
                 child: _isSubmitting
@@ -242,7 +303,7 @@ class _JobApplyScreenState extends State<JobApplyScreen> {
                         ),
                       )
                     : Text(
-                        'Submit Application',
+                        'Apply Now',
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -250,6 +311,7 @@ class _JobApplyScreenState extends State<JobApplyScreen> {
                       ),
               ),
             ),
+            const SizedBox(height: 32),
           ],
         ),
       ),
