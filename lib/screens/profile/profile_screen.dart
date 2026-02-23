@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:job_finder/config/theme.dart';
 import 'package:job_finder/providers/auth_provider.dart';
+import 'package:job_finder/providers/theme_provider.dart';
 import 'package:job_finder/widgets/user_avatar.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -12,11 +13,13 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final themeProvider = context.watch<ThemeProvider>();
+    final isDark = themeProvider.isDarkMode;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: isDark ? AppColors.darkBg : AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
         title: Text(
           'Profile',
           style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
@@ -35,7 +38,7 @@ class ProfileScreen extends StatelessWidget {
             // Profile header
             Container(
               width: double.infinity,
-              color: Colors.white,
+              color: isDark ? AppColors.darkSurface : Colors.white,
               padding: const EdgeInsets.all(24),
               child: Column(
                 children: [
@@ -50,7 +53,9 @@ class ProfileScreen extends StatelessWidget {
                     style: GoogleFonts.poppins(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+                      color: isDark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -58,7 +63,9 @@ class ProfileScreen extends StatelessWidget {
                     auth.userEmail,
                     style: GoogleFonts.poppins(
                       fontSize: 14,
-                      color: AppColors.textSecondary,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.textSecondary,
                     ),
                   ),
                   if (auth.userPhone.isNotEmpty) ...[
@@ -67,21 +74,35 @@ class ProfileScreen extends StatelessWidget {
                       auth.userPhone,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
-                        color: AppColors.textSecondary,
+                        color: isDark
+                            ? AppColors.darkTextSecondary
+                            : AppColors.textSecondary,
                       ),
                     ),
                   ],
                   const SizedBox(height: 16),
                   OutlinedButton.icon(
                     onPressed: () {},
-                    icon: const Icon(Icons.edit_outlined, size: 18),
+                    icon: Icon(
+                      Icons.edit_outlined,
+                      size: 18,
+                      color: isDark
+                          ? AppColors.primaryLight
+                          : AppColors.primary,
+                    ),
                     label: Text(
                       'Edit Profile',
                       style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
                     ),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.primary,
-                      side: const BorderSide(color: AppColors.primary),
+                      foregroundColor: isDark
+                          ? AppColors.primaryLight
+                          : AppColors.primary,
+                      side: BorderSide(
+                        color: isDark
+                            ? AppColors.primaryLight
+                            : AppColors.primary,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -97,48 +118,60 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 12),
             // Stats
             Container(
-              color: Colors.white,
+              color: isDark ? AppColors.darkSurface : Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _statItem('3', 'Applied'),
-                  Container(width: 1, height: 40, color: AppColors.divider),
-                  _statItem('2', 'Saved'),
-                  Container(width: 1, height: 40, color: AppColors.divider),
-                  _statItem('1', 'Interview'),
+                  _statItem('3', 'Applied', isDark),
+                  Container(
+                    width: 1,
+                    height: 40,
+                    color: isDark ? AppColors.darkDivider : AppColors.divider,
+                  ),
+                  _statItem('2', 'Saved', isDark),
+                  Container(
+                    width: 1,
+                    height: 40,
+                    color: isDark ? AppColors.darkDivider : AppColors.divider,
+                  ),
+                  _statItem('1', 'Interview', isDark),
                 ],
               ),
             ),
             const SizedBox(height: 12),
             // Menu items
             Container(
-              color: Colors.white,
+              color: isDark ? AppColors.darkSurface : Colors.white,
               child: Column(
                 children: [
                   _menuItem(
                     icon: Icons.description_outlined,
                     title: 'My Resume',
                     onTap: () => context.push('/resume'),
+                    isDark: isDark,
                   ),
-                  _divider(),
+                  _divider(isDark),
                   _menuItem(
                     icon: Icons.work_outline,
                     title: 'My Applications',
                     badge: '3',
                     onTap: () {},
+                    isDark: isDark,
                   ),
-                  _divider(),
+                  _divider(isDark),
                   _menuItem(
                     icon: Icons.bookmark_border,
                     title: 'Saved Jobs',
                     onTap: () => context.push('/saved-jobs'),
+                    isDark: isDark,
                   ),
-                  _divider(),
+                  _divider(isDark),
                   _menuItem(
                     icon: Icons.business_outlined,
                     title: 'Following Companies',
                     onTap: () {},
+                    isDark: isDark,
                   ),
                 ],
               ),
@@ -146,43 +179,48 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 12),
             // Settings
             Container(
-              color: Colors.white,
+              color: isDark ? AppColors.darkSurface : Colors.white,
               child: Column(
                 children: [
                   _menuItem(
                     icon: Icons.notifications_outlined,
                     title: 'Notifications',
                     onTap: () {},
+                    isDark: isDark,
                   ),
-                  _divider(),
+                  _divider(isDark),
                   _menuItem(
                     icon: Icons.dark_mode_outlined,
                     title: 'Dark Mode',
                     trailing: Switch(
-                      value: false,
-                      onChanged: (val) {},
+                      value: isDark,
+                      onChanged: (val) => themeProvider.toggleTheme(),
                       activeColor: AppColors.primary,
                     ),
-                    onTap: () {},
+                    onTap: () => themeProvider.toggleTheme(),
+                    isDark: isDark,
                   ),
-                  _divider(),
+                  _divider(isDark),
                   _menuItem(
                     icon: Icons.language,
                     title: 'Language',
                     subtitle: 'English',
                     onTap: () {},
+                    isDark: isDark,
                   ),
-                  _divider(),
+                  _divider(isDark),
                   _menuItem(
                     icon: Icons.help_outline,
                     title: 'Help Center',
                     onTap: () {},
+                    isDark: isDark,
                   ),
-                  _divider(),
+                  _divider(isDark),
                   _menuItem(
                     icon: Icons.info_outline,
                     title: 'About',
                     onTap: () {},
+                    isDark: isDark,
                   ),
                 ],
               ),
@@ -190,12 +228,13 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 12),
             // Logout
             Container(
-              color: Colors.white,
+              color: isDark ? AppColors.darkSurface : Colors.white,
               child: _menuItem(
                 icon: Icons.logout,
                 title: 'Log Out',
                 iconColor: AppColors.error,
                 titleColor: AppColors.error,
+                isDark: isDark,
                 onTap: () {
                   showDialog(
                     context: context,
@@ -237,7 +276,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _statItem(String value, String label) {
+  Widget _statItem(String value, String label, bool isDark) {
     return Column(
       children: [
         Text(
@@ -245,14 +284,16 @@ class ProfileScreen extends StatelessWidget {
           style: GoogleFonts.poppins(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: AppColors.primary,
+            color: isDark ? AppColors.primaryLight : AppColors.primary,
           ),
         ),
         Text(
           label,
           style: GoogleFonts.poppins(
             fontSize: 13,
-            color: AppColors.textSecondary,
+            color: isDark
+                ? AppColors.darkTextSecondary
+                : AppColors.textSecondary,
           ),
         ),
       ],
@@ -262,6 +303,7 @@ class ProfileScreen extends StatelessWidget {
   Widget _menuItem({
     required IconData icon,
     required String title,
+    required bool isDark,
     String? subtitle,
     String? badge,
     Widget? trailing,
@@ -269,15 +311,28 @@ class ProfileScreen extends StatelessWidget {
     Color? titleColor,
     required VoidCallback onTap,
   }) {
+    final effectiveIconColor =
+        iconColor ??
+        (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary);
+    final effectiveTitleColor =
+        titleColor ??
+        (isDark ? AppColors.darkTextPrimary : AppColors.textPrimary);
+    final effectiveSubtitleColor = isDark
+        ? AppColors.darkTextHint
+        : AppColors.textHint;
+    final effectiveArrowColor = isDark
+        ? AppColors.darkTextHint
+        : AppColors.textHint;
+
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-      leading: Icon(icon, color: iconColor ?? AppColors.textSecondary),
+      leading: Icon(icon, color: effectiveIconColor),
       title: Text(
         title,
         style: GoogleFonts.poppins(
           fontSize: 15,
           fontWeight: FontWeight.w500,
-          color: titleColor ?? AppColors.textPrimary,
+          color: effectiveTitleColor,
         ),
       ),
       subtitle: subtitle != null
@@ -285,7 +340,7 @@ class ProfileScreen extends StatelessWidget {
               subtitle,
               style: GoogleFonts.poppins(
                 fontSize: 13,
-                color: AppColors.textHint,
+                color: effectiveSubtitleColor,
               ),
             )
           : null,
@@ -298,7 +353,7 @@ class ProfileScreen extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
+                    color: AppColors.primary.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -310,16 +365,20 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                 )
-              : const Icon(
+              : Icon(
                   Icons.arrow_forward_ios,
                   size: 16,
-                  color: AppColors.textHint,
+                  color: effectiveArrowColor,
                 )),
       onTap: onTap,
     );
   }
 
-  Widget _divider() {
-    return const Divider(height: 1, indent: 60);
+  Widget _divider(bool isDark) {
+    return Divider(
+      height: 1,
+      indent: 60,
+      color: isDark ? AppColors.darkDivider : AppColors.divider,
+    );
   }
 }

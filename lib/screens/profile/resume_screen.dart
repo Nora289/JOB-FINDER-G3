@@ -1,7 +1,9 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:job_finder/config/theme.dart';
+import 'package:job_finder/providers/theme_provider.dart';
 
 class ResumeScreen extends StatefulWidget {
   const ResumeScreen({super.key});
@@ -23,13 +25,10 @@ class _ResumeScreenState extends State<ResumeScreen>
       _isUploading = true;
       _uploadProgress = 0.0;
     });
-    // Simulate upload progress
     Future.doWhile(() async {
       await Future.delayed(const Duration(milliseconds: 80));
       if (!mounted) return false;
-      setState(() {
-        _uploadProgress += 0.02;
-      });
+      setState(() => _uploadProgress += 0.02);
       if (_uploadProgress >= 1.0) {
         setState(() {
           _isUploading = false;
@@ -55,16 +54,18 @@ class _ResumeScreenState extends State<ResumeScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? AppColors.darkBg : Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios,
             size: 20,
-            color: AppColors.textPrimary,
+            color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -73,7 +74,7 @@ class _ResumeScreenState extends State<ResumeScreen>
           style: GoogleFonts.poppins(
             fontSize: 17,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
           ),
         ),
         centerTitle: true,
@@ -97,19 +98,15 @@ class _ResumeScreenState extends State<ResumeScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 16),
-
-            // ── Resume or CV title ──
             Text(
               'Resume or CV',
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 16),
-
-            // ── Dashed upload area ──
             GestureDetector(
               onTap: (!_isUploading && !_isUploaded) ? _startUpload : null,
               child: CustomPaint(
@@ -120,17 +117,12 @@ class _ResumeScreenState extends State<ResumeScreen>
                 ),
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 24,
-                    horizontal: 20,
-                  ),
-                  child: _buildUploadContent(),
+                  padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+                  child: _buildUploadContent(isDark),
                 ),
               ),
             ),
             const SizedBox(height: 28),
-
-            // ── Uploading (Optional) ──
             RichText(
               text: TextSpan(
                 children: [
@@ -139,7 +131,7 @@ class _ResumeScreenState extends State<ResumeScreen>
                     style: GoogleFonts.poppins(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
                     ),
                   ),
                   TextSpan(
@@ -147,52 +139,41 @@ class _ResumeScreenState extends State<ResumeScreen>
                     style: GoogleFonts.poppins(
                       fontSize: 13,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.textHint,
+                      color: isDark ? AppColors.darkTextHint : AppColors.textHint,
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 16),
-
-            // ── Action buttons ──
             if (!_isUploaded) ...[
-              // ui15 state: Portfolio Link, Add PDF, Add Photos
               Row(
                 children: [
-                  _actionButton('Portfolio Link'),
+                  _actionButton('Portfolio Link', isDark),
                   const SizedBox(width: 12),
-                  _actionButton('Add PDF'),
+                  _actionButton('Add PDF', isDark),
                 ],
               ),
               const SizedBox(height: 12),
-              _actionButton('Add Photos'),
+              _actionButton('Add Photos', isDark),
             ] else ...[
-              // ui16 state: Add PDF, Add Photos
               Row(
                 children: [
-                  _actionButton('Add PDF'),
+                  _actionButton('Add PDF', isDark),
                   const SizedBox(width: 12),
-                  _actionButton('Add Photos'),
+                  _actionButton('Add Photos', isDark),
                 ],
               ),
             ],
-
             const Spacer(),
-
-            // ── Save button ──
             SizedBox(
               width: double.infinity,
               height: 54,
               child: ElevatedButton(
                 onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _isUploaded
-                      ? AppColors.primary
-                      : Colors.grey.shade300,
-                  foregroundColor: _isUploaded
-                      ? Colors.white
-                      : AppColors.textSecondary,
+                  backgroundColor: _isUploaded ? AppColors.primary : Colors.grey.shade300,
+                  foregroundColor: _isUploaded ? Colors.white : AppColors.textSecondary,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
@@ -200,10 +181,7 @@ class _ResumeScreenState extends State<ResumeScreen>
                 ),
                 child: Text(
                   'Save',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -214,9 +192,8 @@ class _ResumeScreenState extends State<ResumeScreen>
     );
   }
 
-  Widget _buildUploadContent() {
+  Widget _buildUploadContent(bool isDark) {
     if (_isUploaded && _uploadedFileName != null) {
-      // ── Uploaded state (ui16) ──
       return Column(
         children: [
           Text(
@@ -224,7 +201,7 @@ class _ResumeScreenState extends State<ResumeScreen>
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
               fontSize: 13,
-              color: AppColors.textSecondary,
+              color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
               height: 1.5,
             ),
           ),
@@ -232,12 +209,11 @@ class _ResumeScreenState extends State<ResumeScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
+              color: isDark ? AppColors.darkCard : Colors.grey.shade100,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
               children: [
-                // PDF icon
                 Container(
                   width: 36,
                   height: 36,
@@ -266,7 +242,7 @@ class _ResumeScreenState extends State<ResumeScreen>
                         style: GoogleFonts.poppins(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
-                          color: AppColors.textPrimary,
+                          color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -275,7 +251,7 @@ class _ResumeScreenState extends State<ResumeScreen>
                         _uploadedFileSize!,
                         style: GoogleFonts.poppins(
                           fontSize: 11,
-                          color: AppColors.textHint,
+                          color: isDark ? AppColors.darkTextHint : AppColors.textHint,
                         ),
                       ),
                     ],
@@ -287,14 +263,10 @@ class _ResumeScreenState extends State<ResumeScreen>
                     width: 24,
                     height: 24,
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
+                      color: Colors.grey.shade400,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
-                      Icons.close,
-                      size: 14,
-                      color: Colors.white,
-                    ),
+                    child: const Icon(Icons.close, size: 14, color: Colors.white),
                   ),
                 ),
               ],
@@ -305,7 +277,6 @@ class _ResumeScreenState extends State<ResumeScreen>
     }
 
     if (_isUploading) {
-      // ── Uploading state (ui15) ──
       return Column(
         children: [
           Text(
@@ -313,7 +284,7 @@ class _ResumeScreenState extends State<ResumeScreen>
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
               fontSize: 13,
-              color: AppColors.textSecondary,
+              color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
               height: 1.5,
             ),
           ),
@@ -328,16 +299,14 @@ class _ResumeScreenState extends State<ResumeScreen>
                   value: _uploadProgress,
                   strokeWidth: 4,
                   backgroundColor: Colors.grey.shade200,
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                    AppColors.primary,
-                  ),
+                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
                 ),
                 Text(
                   '${(_uploadProgress * 100).toInt()}%',
                   style: GoogleFonts.poppins(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
                   ),
                 ),
               ],
@@ -349,14 +318,13 @@ class _ResumeScreenState extends State<ResumeScreen>
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: AppColors.textPrimary,
+              color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
             ),
           ),
         ],
       );
     }
 
-    // ── Default empty state ──
     return Column(
       children: [
         Text(
@@ -364,31 +332,30 @@ class _ResumeScreenState extends State<ResumeScreen>
           textAlign: TextAlign.center,
           style: GoogleFonts.poppins(
             fontSize: 13,
-            color: AppColors.textSecondary,
+            color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
             height: 1.5,
           ),
         ),
         const SizedBox(height: 20),
-        Icon(
-          Icons.cloud_upload_outlined,
-          size: 48,
-          color: Colors.grey.shade400,
-        ),
+        Icon(Icons.cloud_upload_outlined, size: 48, color: Colors.grey.shade400),
         const SizedBox(height: 8),
         Text(
           'Tap to upload',
-          style: GoogleFonts.poppins(fontSize: 13, color: AppColors.textHint),
+          style: GoogleFonts.poppins(
+            fontSize: 13,
+            color: isDark ? AppColors.darkTextHint : AppColors.textHint,
+          ),
         ),
       ],
     );
   }
 
-  Widget _actionButton(String label) {
+  Widget _actionButton(String label, bool isDark) {
     return OutlinedButton(
       onPressed: () {},
       style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.textPrimary,
-        side: BorderSide(color: Colors.grey.shade300),
+        foregroundColor: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+        side: BorderSide(color: isDark ? AppColors.darkDivider : Colors.grey.shade300),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       ),
@@ -400,7 +367,6 @@ class _ResumeScreenState extends State<ResumeScreen>
   }
 }
 
-// ── Dashed border painter ──
 class _DashedBorderPainter extends CustomPainter {
   final Color color;
   final double strokeWidth;
@@ -425,7 +391,6 @@ class _DashedBorderPainter extends CustomPainter {
       const Radius.circular(14),
     );
 
-    // Create dashed path
     final metrics = Path()..addRRect(rRect);
     for (final metric in metrics.computeMetrics()) {
       double distance = 0;

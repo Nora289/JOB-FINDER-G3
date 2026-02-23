@@ -4,6 +4,7 @@ import 'package:job_finder/config/theme.dart';
 import 'package:job_finder/config/routes.dart';
 import 'package:job_finder/providers/auth_provider.dart';
 import 'package:job_finder/providers/job_provider.dart';
+import 'package:job_finder/providers/theme_provider.dart';
 
 void main() {
   runApp(const JobFinderApp());
@@ -18,14 +19,19 @@ class JobFinderApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => JobProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
-      child: MaterialApp.router(
-        title: 'Job Finder',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.light,
-        routerConfig: appRouter,
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp.router(
+            title: 'Job Finder',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeProvider.themeMode,
+            routerConfig: appRouter,
+          );
+        },
       ),
     );
   }

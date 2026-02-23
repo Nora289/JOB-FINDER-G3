@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:job_finder/config/theme.dart';
 import 'package:job_finder/providers/job_provider.dart';
+import 'package:job_finder/providers/theme_provider.dart';
 import 'package:job_finder/widgets/job_card.dart';
 
 class SavedJobsScreen extends StatelessWidget {
@@ -13,11 +14,12 @@ class SavedJobsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final jobProvider = context.watch<JobProvider>();
     final savedJobs = jobProvider.savedJobs;
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: isDark ? AppColors.darkBg : AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
         title: Text(
           'Saved Jobs',
           style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
@@ -40,7 +42,9 @@ class SavedJobsScreen extends StatelessWidget {
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textSecondary,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -48,7 +52,9 @@ class SavedJobsScreen extends StatelessWidget {
                     'Save jobs you are interested in\nto view them later',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
-                      color: AppColors.textHint,
+                      color: isDark
+                          ? AppColors.darkTextHint
+                          : AppColors.textHint,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -79,7 +85,9 @@ class SavedJobsScreen extends StatelessWidget {
                     'You saved ${savedJobs.length} job${savedJobs.length > 1 ? 's' : ''}',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
-                      color: AppColors.textSecondary,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ),

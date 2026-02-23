@@ -15,6 +15,8 @@ import 'package:job_finder/screens/messaging/chat_list_screen.dart';
 import 'package:job_finder/screens/messaging/chat_screen.dart';
 import 'package:job_finder/screens/profile/profile_screen.dart';
 import 'package:job_finder/screens/profile/resume_screen.dart';
+import 'package:job_finder/screens/notifications/notifications_screen.dart';
+import 'package:job_finder/screens/search/search_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -85,5 +87,10 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const ProfileScreen(),
     ),
     GoRoute(path: '/resume', builder: (context, state) => const ResumeScreen()),
+    GoRoute(
+      path: '/notifications',
+      builder: (context, state) => const NotificationsScreen(),
+    ),
+    GoRoute(path: '/search', builder: (context, state) => const SearchScreen()),
   ],
 );

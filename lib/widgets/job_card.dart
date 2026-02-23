@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:job_finder/config/theme.dart';
 import 'package:job_finder/models/job_model.dart';
+import 'package:provider/provider.dart';
+import 'package:job_finder/providers/theme_provider.dart';
 
 class JobCard extends StatelessWidget {
   final JobModel job;
@@ -17,13 +19,17 @@ class JobCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.darkSurface
+              : Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -65,7 +71,9 @@ class JobCard extends StatelessWidget {
                     style: GoogleFonts.poppins(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: isDark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.textPrimary,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -75,7 +83,9 @@ class JobCard extends StatelessWidget {
                     job.companyName,
                     style: GoogleFonts.poppins(
                       fontSize: 13,
-                      color: AppColors.textSecondary,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -95,14 +105,18 @@ class JobCard extends StatelessWidget {
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.primary,
+                          color: isDark
+                              ? AppColors.primaryLight
+                              : AppColors.primary,
                         ),
                       ),
                       Text(
                         job.postedDate,
                         style: GoogleFonts.poppins(
                           fontSize: 12,
-                          color: AppColors.textHint,
+                          color: isDark
+                              ? AppColors.darkTextHint
+                              : AppColors.textHint,
                         ),
                       ),
                     ],
@@ -126,19 +140,30 @@ class JobCard extends StatelessWidget {
   }
 
   Widget _infoChip(IconData icon, String text) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 14, color: AppColors.textHint),
-        const SizedBox(width: 4),
-        Text(
-          text,
-          style: GoogleFonts.poppins(
-            fontSize: 12,
-            color: AppColors.textSecondary,
-          ),
-        ),
-      ],
+    return Builder(
+      builder: (context) {
+        final dark = Theme.of(context).brightness == Brightness.dark;
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 14,
+              color: dark ? AppColors.darkTextHint : AppColors.textHint,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              text,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: dark
+                    ? AppColors.darkTextSecondary
+                    : AppColors.textSecondary,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

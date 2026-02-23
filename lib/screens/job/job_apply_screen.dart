@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:job_finder/config/theme.dart';
 import 'package:job_finder/providers/auth_provider.dart';
+import 'package:job_finder/providers/theme_provider.dart';
 import 'package:job_finder/widgets/user_avatar.dart';
 
 class JobApplyScreen extends StatefulWidget {
@@ -42,10 +43,12 @@ class _JobApplyScreenState extends State<JobApplyScreen> {
       _resumes[0] = auth.userName;
     }
 
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? AppColors.darkBg : Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(

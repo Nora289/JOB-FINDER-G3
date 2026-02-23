@@ -5,7 +5,10 @@ import 'package:provider/provider.dart';
 import 'package:job_finder/config/theme.dart';
 import 'package:job_finder/providers/auth_provider.dart';
 import 'package:job_finder/providers/job_provider.dart';
+import 'package:job_finder/providers/theme_provider.dart';
 import 'package:job_finder/widgets/user_avatar.dart';
+import 'package:job_finder/widgets/profile_drawer.dart';
+import 'package:job_finder/screens/search/search_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,22 +18,19 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _searchController = TextEditingController();
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
     final jobProvider = context.watch<JobProvider>();
     final auth = context.watch<AuthProvider>();
     final userName = auth.userName.isNotEmpty ? auth.userName : 'User';
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      key: _scaffoldKey,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      drawer: const ProfileDrawer(),
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
@@ -50,7 +50,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             'Welcome to ស្វែករកការងារ!',
                             style: GoogleFonts.poppins(
                               fontSize: 14,
-                              color: AppColors.textSecondary,
+                              color: isDark
+                                  ? AppColors.darkTextSecondary
+                                  : AppColors.textSecondary,
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -59,14 +61,23 @@ class _HomeScreenState extends State<HomeScreen> {
                             style: GoogleFonts.poppins(
                               fontSize: 24,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
+                              color: isDark
+                                  ? AppColors.darkTextPrimary
+                                  : AppColors.textPrimary,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    // Profile avatar
-                    UserAvatar(name: userName, radius: 24, fontSize: 14),
+                    // Profile avatar — tap to open left drawer
+                    GestureDetector(
+                      onTap: () => _scaffoldKey.currentState?.openDrawer(),
+                      child: UserAvatar(
+                        name: userName,
+                        radius: 24,
+                        fontSize: 14,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -78,42 +89,57 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColors.background,
+                    color: isDark
+                        ? AppColors.darkSurface
+                        : AppColors.background,
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: TextField(
-                    controller: _searchController,
-                    style: GoogleFonts.poppins(fontSize: 14),
-                    decoration: InputDecoration(
-                      hintText: 'Search a job or position',
-                      hintStyle: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: AppColors.textHint,
+                  child: GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        pageBuilder: (_, __, ___) =>
+                            const _SearchScreenWrapper(),
+                        transitionsBuilder: (_, anim, __, child) =>
+                            FadeTransition(opacity: anim, child: child),
+                        transitionDuration: const Duration(milliseconds: 200),
                       ),
-                      prefixIcon: const Icon(
-                        Icons.search,
-                        color: AppColors.textHint,
-                      ),
-                      suffixIcon: Container(
-                        margin: const EdgeInsets.all(6),
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: AbsorbPointer(
+                      child: TextField(
+                        style: GoogleFonts.poppins(fontSize: 14),
+                        decoration: InputDecoration(
+                          hintText: 'Search a job or position',
+                          hintStyle: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: AppColors.textHint,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.search,
+                            color: AppColors.textHint,
+                          ),
+                          suffixIcon: Container(
+                            margin: const EdgeInsets.all(6),
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: AppColors.primary,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.tune,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                         ),
-                        child: const Icon(
-                          Icons.tune,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ),
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
                       ),
                     ),
                   ),
@@ -130,7 +156,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: isDark
+                        ? AppColors.darkTextPrimary
+                        : AppColors.textPrimary,
                   ),
                 ),
               ),
@@ -279,7 +307,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: isDark
+                        ? AppColors.darkTextPrimary
+                        : AppColors.textPrimary,
                   ),
                 ),
               ),
@@ -297,9 +327,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       margin: const EdgeInsets.only(bottom: 12),
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: isDark ? AppColors.darkSurface : Colors.white,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: Colors.grey.shade200),
+                        border: Border.all(
+                          color: isDark
+                              ? Colors.grey.shade800
+                              : Colors.grey.shade200,
+                        ),
                       ),
                       child: Row(
                         children: [
@@ -339,14 +373,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                   style: GoogleFonts.poppins(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
-                                    color: AppColors.textPrimary,
+                                    color: isDark
+                                        ? AppColors.darkTextPrimary
+                                        : AppColors.textPrimary,
                                   ),
                                 ),
                                 Text(
                                   '${job.companyName}, ${job.location}',
                                   style: GoogleFonts.poppins(
                                     fontSize: 12,
-                                    color: AppColors.textSecondary,
+                                    color: isDark
+                                        ? AppColors.darkTextSecondary
+                                        : AppColors.textSecondary,
                                   ),
                                 ),
                               ],
@@ -358,7 +396,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             style: GoogleFonts.poppins(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
+                              color: isDark
+                                  ? AppColors.primaryLight
+                                  : AppColors.primary,
                             ),
                           ),
                         ],
@@ -393,4 +433,11 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
+
+class _SearchScreenWrapper extends StatelessWidget {
+  const _SearchScreenWrapper();
+
+  @override
+  Widget build(BuildContext context) => const SearchScreen();
 }

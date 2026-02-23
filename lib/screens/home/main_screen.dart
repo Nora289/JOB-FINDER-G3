@@ -4,6 +4,7 @@ import 'package:job_finder/config/theme.dart';
 import 'package:job_finder/screens/home/home_screen.dart';
 import 'package:job_finder/screens/job/saved_jobs_screen.dart';
 import 'package:job_finder/screens/messaging/chat_list_screen.dart';
+import 'package:job_finder/screens/notifications/notifications_screen.dart';
 import 'package:job_finder/screens/profile/profile_screen.dart';
 
 class MainScreen extends StatefulWidget {
@@ -19,7 +20,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _screens = const [
     HomeScreen(),
     SavedJobsScreen(),
-    ChatListScreen(),
+    NotificationsScreen(),
     ChatListScreen(),
     ProfileScreen(),
   ];
@@ -30,7 +31,7 @@ class _MainScreenState extends State<MainScreen> {
       body: _screens[_currentIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).scaffoldBackgroundColor,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.08),
@@ -43,7 +44,7 @@ class _MainScreenState extends State<MainScreen> {
           currentIndex: _currentIndex,
           onTap: (index) => setState(() => _currentIndex = index),
           type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.white,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           selectedItemColor: AppColors.primary,
           unselectedItemColor: AppColors.textHint,
           selectedLabelStyle: GoogleFonts.poppins(
@@ -64,9 +65,9 @@ class _MainScreenState extends State<MainScreen> {
               label: 'Saved',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.people_outline),
-              activeIcon: Icon(Icons.people),
-              label: 'Contacts',
+              icon: Icon(Icons.notifications_outlined),
+              activeIcon: Icon(Icons.notifications),
+              label: 'Notifications',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.chat_bubble_outline),

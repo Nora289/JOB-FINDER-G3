@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:job_finder/config/theme.dart';
+import 'package:job_finder/providers/theme_provider.dart';
 import 'package:job_finder/models/message_model.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -22,7 +24,8 @@ class _ChatScreenState extends State<ChatScreen> {
       senderId: 'company',
       senderName: 'HR Google',
       senderAvatar: '',
-      content: 'Hi! Thank you for applying to our Senior Flutter Developer position.',
+      content:
+          'Hi! Thank you for applying to our Senior Flutter Developer position.',
       timestamp: DateTime.now().subtract(const Duration(hours: 3)),
       isMe: false,
     ),
@@ -31,7 +34,8 @@ class _ChatScreenState extends State<ChatScreen> {
       senderId: 'company',
       senderName: 'HR Google',
       senderAvatar: '',
-      content: 'We have reviewed your application and would like to schedule an interview with you.',
+      content:
+          'We have reviewed your application and would like to schedule an interview with you.',
       timestamp: DateTime.now().subtract(const Duration(hours: 2, minutes: 50)),
       isMe: false,
     ),
@@ -49,7 +53,8 @@ class _ChatScreenState extends State<ChatScreen> {
       senderId: 'me',
       senderName: 'Me',
       senderAvatar: '',
-      content: 'I\'m available anytime this week. What time works best for you?',
+      content:
+          'I\'m available anytime this week. What time works best for you?',
       timestamp: DateTime.now().subtract(const Duration(hours: 2, minutes: 28)),
       isMe: true,
     ),
@@ -58,7 +63,8 @@ class _ChatScreenState extends State<ChatScreen> {
       senderId: 'company',
       senderName: 'HR Google',
       senderAvatar: '',
-      content: 'Great! How about Wednesday at 10:00 AM? The interview will be conducted via Google Meet.',
+      content:
+          'Great! How about Wednesday at 10:00 AM? The interview will be conducted via Google Meet.',
       timestamp: DateTime.now().subtract(const Duration(hours: 2)),
       isMe: false,
     ),
@@ -74,15 +80,17 @@ class _ChatScreenState extends State<ChatScreen> {
   void _sendMessage() {
     if (_messageController.text.trim().isEmpty) return;
     setState(() {
-      _messages.add(MessageModel(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        senderId: 'me',
-        senderName: 'Me',
-        senderAvatar: '',
-        content: _messageController.text.trim(),
-        timestamp: DateTime.now(),
-        isMe: true,
-      ));
+      _messages.add(
+        MessageModel(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          senderId: 'me',
+          senderName: 'Me',
+          senderAvatar: '',
+          content: _messageController.text.trim(),
+          timestamp: DateTime.now(),
+          isMe: true,
+        ),
+      );
     });
     _messageController.clear();
     Future.delayed(const Duration(milliseconds: 100), () {
@@ -98,12 +106,17 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: isDark ? AppColors.darkBg : AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
+          icon: Icon(
+            Icons.arrow_back_ios,
+            color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Row(
@@ -128,7 +141,9 @@ class _ChatScreenState extends State<ChatScreen> {
                   style: GoogleFonts.poppins(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: isDark
+                        ? AppColors.darkTextPrimary
+                        : AppColors.textPrimary,
                   ),
                 ),
                 Text(
@@ -144,11 +159,17 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.phone_outlined, color: AppColors.textPrimary),
+            icon: Icon(
+              Icons.phone_outlined,
+              color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+            ),
             onPressed: () {},
           ),
           IconButton(
-            icon: const Icon(Icons.more_vert, color: AppColors.textPrimary),
+            icon: Icon(
+              Icons.more_vert,
+              color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+            ),
             onPressed: () {},
           ),
         ],
@@ -170,7 +191,7 @@ class _ChatScreenState extends State<ChatScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark ? AppColors.darkSurface : Colors.white,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.05),
@@ -182,7 +203,10 @@ class _ChatScreenState extends State<ChatScreen> {
             child: Row(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.attach_file, color: AppColors.textHint),
+                  icon: const Icon(
+                    Icons.attach_file,
+                    color: AppColors.textHint,
+                  ),
                   onPressed: () {},
                 ),
                 Expanded(
@@ -191,12 +215,17 @@ class _ChatScreenState extends State<ChatScreen> {
                     decoration: InputDecoration(
                       hintText: 'Type a message...',
                       filled: true,
-                      fillColor: AppColors.background,
+                      fillColor: isDark
+                          ? AppColors.darkCard
+                          : AppColors.background,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                         borderSide: BorderSide.none,
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
                     ),
                     onSubmitted: (_) => _sendMessage(),
                   ),
@@ -211,7 +240,11 @@ class _ChatScreenState extends State<ChatScreen> {
                       color: AppColors.primary,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.send, color: Colors.white, size: 20),
+                    child: const Icon(
+                      Icons.send,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                 ),
               ],
@@ -232,7 +265,11 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: message.isMe ? AppColors.primary : Colors.white,
+          color: message.isMe
+              ? AppColors.primary
+              : (Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkCard
+                    : Colors.white),
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
             topRight: const Radius.circular(16),
