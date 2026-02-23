@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:job_finder/config/theme.dart';
 import 'package:job_finder/providers/auth_provider.dart';
+import 'package:job_finder/widgets/user_avatar.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -38,12 +39,10 @@ class ProfileScreen extends StatelessWidget {
               padding: const EdgeInsets.all(24),
               child: Column(
                 children: [
-                  CircleAvatar(
+                  UserAvatar(
+                    name: auth.userName.isNotEmpty ? auth.userName : 'User',
                     radius: 50,
-                    backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                    backgroundImage: const AssetImage(
-                      'assets/images/profile.JPG',
-                    ),
+                    fontSize: 28,
                   ),
                   const SizedBox(height: 16),
                   Text(

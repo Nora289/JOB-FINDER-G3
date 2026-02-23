@@ -3,7 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:job_finder/config/theme.dart';
+import 'package:job_finder/providers/auth_provider.dart';
 import 'package:job_finder/providers/job_provider.dart';
+import 'package:job_finder/widgets/user_avatar.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,6 +26,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final jobProvider = context.watch<JobProvider>();
+    final auth = context.watch<AuthProvider>();
+    final userName = auth.userName.isNotEmpty ? auth.userName : 'User';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -62,29 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     // Profile avatar
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: AppColors.primary.withValues(alpha: 0.3),
-                          width: 2,
-                        ),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.asset(
-                          'assets/images/profile.JPG',
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(
-                                Icons.person,
-                                color: AppColors.primary,
-                              ),
-                        ),
-                      ),
-                    ),
+                    UserAvatar(name: userName, radius: 24, fontSize: 14),
                   ],
                 ),
               ),

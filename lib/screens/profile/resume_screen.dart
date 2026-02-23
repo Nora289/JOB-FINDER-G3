@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:job_finder/config/theme.dart';
+import 'package:job_finder/providers/auth_provider.dart';
+import 'package:job_finder/widgets/user_avatar.dart';
 
 class ResumeScreen extends StatelessWidget {
   const ResumeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
+    final userName = auth.userName.isNotEmpty ? auth.userName : 'Sokha Chan';
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -53,14 +59,10 @@ class ResumeScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  const CircleAvatar(
-                    radius: 36,
-                    backgroundColor: Colors.white,
-                    backgroundImage: AssetImage('assets/images/profile.JPG'),
-                  ),
+                  UserAvatar(name: userName, radius: 36, fontSize: 20),
                   const SizedBox(height: 12),
                   Text(
-                    'Sokha Chan',
+                    userName,
                     style: GoogleFonts.poppins(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
