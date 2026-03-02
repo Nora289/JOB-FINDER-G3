@@ -110,15 +110,7 @@ class JobCard extends StatelessWidget {
                               : AppColors.primary,
                         ),
                       ),
-                      Text(
-                        job.postedDate,
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: isDark
-                              ? AppColors.darkTextHint
-                              : AppColors.textHint,
-                        ),
-                      ),
+                      _deadlineBadge(job.deadline, job.postedDate, isDark),
                     ],
                   ),
                 ],
@@ -135,6 +127,86 @@ class JobCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _deadlineBadge(String? deadline, String postedDate, bool isDark) {
+    if (deadline == null || deadline.isEmpty) {
+      return Text(
+        postedDate,
+        style: GoogleFonts.poppins(
+          fontSize: 12,
+          color: isDark ? AppColors.darkTextHint : AppColors.textHint,
+        ),
+      );
+    }
+    // Try to parse deadline and show countdown
+    try {
+      final parts = deadline.split('/');
+      if (parts.length == 3) {
+        final day = int.parse(parts[0]);
+        final month = int.parse(parts[1]);
+        final year = int.parse(parts[2]);
+        final deadlineDate = DateTime(year, month, day);
+        final now = DateTime.now();
+        final diff = deadlineDate.difference(now).inDays;
+        if (diff < 0) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+            decoration: BoxDecoration(
+              color: AppColors.error.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              'Expired',
+              style: GoogleFonts.poppins(
+                fontSize: 11,
+                color: AppColors.error,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          );
+        } else if (diff <= 3) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFF6B35).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              diff == 0 ? 'Last day!' : '$diff day${diff == 1 ? '' : 's'} left',
+              style: GoogleFonts.poppins(
+                fontSize: 11,
+                color: const Color(0xFFFF6B35),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          );
+        } else if (diff <= 7) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              '$diff days left',
+              style: GoogleFonts.poppins(
+                fontSize: 11,
+                color: const Color(0xFFF59E0B),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          );
+        }
+      }
+    } catch (_) {}
+    return Text(
+      deadline,
+      style: GoogleFonts.poppins(
+        fontSize: 12,
+        color: isDark ? AppColors.darkTextHint : AppColors.textHint,
       ),
     );
   }

@@ -6,6 +6,8 @@ import 'package:job_finder/config/theme.dart';
 import 'package:job_finder/models/job_model.dart';
 import 'package:job_finder/providers/theme_provider.dart';
 import 'package:job_finder/providers/job_provider.dart';
+import 'package:job_finder/l10n/app_localizations.dart';
+import 'package:job_finder/widgets/job_filter_sheet.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -21,11 +23,11 @@ class _SearchScreenState extends State<SearchScreen> {
   final List<String> _recentSearches = [];
 
   static const _popularRoles = [
-    'designer',
-    'Administrate',
+    'Designer',
+    'Administrator',
     'NGO',
     'Manager',
-    'Managememt',
+    'Management',
     'IT',
     'Marketing',
     'Developer',
@@ -65,9 +67,11 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     final isDark = context.watch<ThemeProvider>().isDarkMode;
     final jobProvider = context.watch<JobProvider>();
+    final l10n = AppLocalizations.of(context);
+    final hasFilters = jobProvider.hasActiveFilters;
 
     final List<JobModel> results = _query.trim().isNotEmpty
-        ? jobProvider.jobs
+        ? jobProvider.filteredJobs
               .where(
                 (j) =>
                     j.title.toLowerCase().contains(_query.toLowerCase()) ||
@@ -75,9 +79,12 @@ class _SearchScreenState extends State<SearchScreen> {
                       _query.toLowerCase(),
                     ) ||
                     j.location.toLowerCase().contains(_query.toLowerCase()) ||
-                    j.type.toLowerCase().contains(_query.toLowerCase()),
+                    j.type.toLowerCase().contains(_query.toLowerCase()) ||
+                    j.category.toLowerCase().contains(_query.toLowerCase()),
               )
               .toList()
+        : jobProvider.hasActiveFilters
+        ? jobProvider.filteredJobs
         : [];
 
     return Scaffold(
@@ -104,7 +111,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Search',
+                      l10n['search'] ?? 'Search',
                       style: GoogleFonts.poppins(
                         fontSize: 17,
                         fontWeight: FontWeight.w600,
@@ -124,22 +131,50 @@ class _SearchScreenState extends State<SearchScreen> {
             // ── Search field ──
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      height: 48,
+              child: Container(
+                height: 54,
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.darkSurface : Colors.white,
+                  borderRadius: BorderRadius.circular(28),
+                  border: Border.all(
+                    color: isDark
+                        ? AppColors.darkDivider
+                        : Colors.grey.shade200,
+                    width: 1.5,
+                  ),
+                  boxShadow: isDark
+                      ? []
+                      : [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.08),
+                            blurRadius: 20,
+                            offset: const Offset(0, 6),
+                          ),
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                ),
+                child: Row(
+                  children: [
+                    const SizedBox(width: 14),
+                    Container(
+                      width: 34,
+                      height: 34,
                       decoration: BoxDecoration(
-                        color: isDark
-                            ? AppColors.darkSurface
-                            : AppColors.background,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isDark
-                              ? AppColors.darkDivider
-                              : AppColors.divider,
-                        ),
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
                       ),
+                      child: const Icon(
+                        Icons.search_rounded,
+                        color: AppColors.primary,
+                        size: 18,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
                       child: TextField(
                         controller: _searchController,
                         focusNode: _focusNode,
@@ -152,15 +187,9 @@ class _SearchScreenState extends State<SearchScreen> {
                               : AppColors.textPrimary,
                         ),
                         decoration: InputDecoration(
-                          hintText: 'Search or position',
+                          hintText: 'Search a job or position',
                           hintStyle: GoogleFonts.poppins(
                             fontSize: 14,
-                            color: isDark
-                                ? AppColors.darkTextHint
-                                : AppColors.textHint,
-                          ),
-                          prefixIcon: Icon(
-                            Icons.search,
                             color: isDark
                                 ? AppColors.darkTextHint
                                 : AppColors.textHint,
@@ -168,31 +197,61 @@ class _SearchScreenState extends State<SearchScreen> {
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,
                           focusedBorder: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 14,
-                          ),
+                          isDense: true,
+                          contentPadding: EdgeInsets.zero,
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? AppColors.darkSurface
-                          : AppColors.background,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isDark
-                            ? AppColors.darkDivider
-                            : AppColors.divider,
+                    GestureDetector(
+                      onTap: () => showJobFilterSheet(context),
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [AppColors.primary, Color(0xFF5B8FFF)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.35),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            const Center(
+                              child: Icon(
+                                Icons.tune_rounded,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                            ),
+                            if (hasFilters)
+                              Positioned(
+                                top: -3,
+                                right: -3,
+                                child: Container(
+                                  width: 10,
+                                  height: 10,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.orange,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
                     ),
-                    child: Icon(Icons.tune, color: AppColors.primary),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 20),
@@ -210,12 +269,13 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildSuggestions(bool isDark) {
+    final l10n = AppLocalizations.of(context);
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       children: [
         // Recent searches
         Text(
-          'Recent Searches',
+          l10n['recent_searches'] ?? 'Recent Searches',
           style: GoogleFonts.poppins(
             fontSize: 15,
             fontWeight: FontWeight.w600,
@@ -225,7 +285,7 @@ class _SearchScreenState extends State<SearchScreen> {
         const SizedBox(height: 6),
         if (_recentSearches.isEmpty)
           Text(
-            'You don\'t have any search history',
+            l10n['no_history'] ?? "You don't have any search history",
             style: GoogleFonts.poppins(
               fontSize: 13,
               color: isDark ? AppColors.darkTextHint : AppColors.textHint,
@@ -243,7 +303,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
         // Popular roles
         Text(
-          'Popular Roles',
+          l10n['popular_roles'] ?? 'Popular Roles',
           style: GoogleFonts.poppins(
             fontSize: 15,
             fontWeight: FontWeight.w600,

@@ -19,12 +19,36 @@ class _SignInScreenState extends State<SignInScreen> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
+  String? _socialLoading; // 'apple' | 'google' | 'facebook'
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _socialSignIn(String provider) async {
+    if (_socialLoading != null) return;
+    setState(() => _socialLoading = provider);
+
+    // Capture before any await
+    final auth = context.read<AuthProvider>();
+
+    // Simulate network delay (replace with real OAuth SDK call here)
+    await Future.delayed(const Duration(milliseconds: 1400));
+
+    // Map provider → a demo account
+    final Map<String, Map<String, String>> accounts = {
+      'apple': {'email': 'apple.user@icloud.com', 'name': 'Apple User'},
+      'google': {'email': 'soknora@gmail.com', 'name': 'Sok Nora'},
+      'facebook': {'email': 'facebook.user@fb.com', 'name': 'Facebook User'},
+    };
+    final account = accounts[provider]!;
+    await auth.signIn(account['email']!, account['name']!);
+    if (!mounted) return;
+    setState(() => _socialLoading = null);
+    context.go('/main');
   }
 
   Future<void> _signIn() async {
@@ -100,10 +124,16 @@ class _SignInScreenState extends State<SignInScreen> {
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      style: GoogleFonts.poppins(fontSize: 14),
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: isDark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.textPrimary,
+                      ),
                       decoration: _inputDecoration(
                         hint: 'Email',
                         icon: Icons.email_outlined,
+                        isDark: isDark,
                       ),
                       validator: (v) => (v == null || v.isEmpty)
                           ? 'Please enter your email'
@@ -115,11 +145,17 @@ class _SignInScreenState extends State<SignInScreen> {
                     TextFormField(
                       controller: _passwordController,
                       obscureText: _obscurePassword,
-                      style: GoogleFonts.poppins(fontSize: 14),
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: isDark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.textPrimary,
+                      ),
                       decoration:
                           _inputDecoration(
                             hint: 'Password',
                             icon: Icons.lock_outline,
+                            isDark: isDark,
                           ).copyWith(
                             suffixIcon: IconButton(
                               icon: Icon(
@@ -188,7 +224,9 @@ class _SignInScreenState extends State<SignInScreen> {
                       children: [
                         Expanded(
                           child: Divider(
-                            color: Colors.grey.shade300,
+                            color: isDark
+                                ? AppColors.darkDivider
+                                : Colors.grey.shade300,
                             thickness: 1,
                           ),
                         ),
@@ -198,13 +236,17 @@ class _SignInScreenState extends State<SignInScreen> {
                             'Or continue with',
                             style: GoogleFonts.poppins(
                               fontSize: 13,
-                              color: Colors.grey.shade500,
+                              color: isDark
+                                  ? AppColors.darkTextHint
+                                  : Colors.grey.shade500,
                             ),
                           ),
                         ),
                         Expanded(
                           child: Divider(
-                            color: Colors.grey.shade300,
+                            color: isDark
+                                ? AppColors.darkDivider
+                                : Colors.grey.shade300,
                             thickness: 1,
                           ),
                         ),
@@ -217,32 +259,44 @@ class _SignInScreenState extends State<SignInScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         // Apple
-                        _socialIcon(
-                          child: Image.asset(
-                            'assets/images/Apple.png',
-                            width: 24,
-                            height: 24,
-                            fit: BoxFit.contain,
+                        GestureDetector(
+                          onTap: () => _socialSignIn('apple'),
+                          child: _socialIcon(
+                            isLoading: _socialLoading == 'apple',
+                            child: Image.asset(
+                              'assets/images/Apple.png',
+                              width: 24,
+                              height: 24,
+                              fit: BoxFit.contain,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 24),
                         // Google
-                        _socialIcon(
-                          child: Image.asset(
-                            'assets/images/Goolge.png',
-                            width: 26,
-                            height: 26,
-                            fit: BoxFit.contain,
+                        GestureDetector(
+                          onTap: () => _socialSignIn('google'),
+                          child: _socialIcon(
+                            isLoading: _socialLoading == 'google',
+                            child: Image.asset(
+                              'assets/images/Goolge.png',
+                              width: 26,
+                              height: 26,
+                              fit: BoxFit.contain,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 24),
                         // Facebook
-                        _socialIcon(
-                          child: Image.asset(
-                            'assets/images/facebook.png',
-                            width: 28,
-                            height: 28,
-                            fit: BoxFit.contain,
+                        GestureDetector(
+                          onTap: () => _socialSignIn('facebook'),
+                          child: _socialIcon(
+                            isLoading: _socialLoading == 'facebook',
+                            child: Image.asset(
+                              'assets/images/facebook.png',
+                              width: 28,
+                              height: 28,
+                              fit: BoxFit.contain,
+                            ),
                           ),
                         ),
                       ],
@@ -257,7 +311,9 @@ class _SignInScreenState extends State<SignInScreen> {
                           'Have an account? ',
                           style: GoogleFonts.poppins(
                             fontSize: 14,
-                            color: Colors.grey.shade600,
+                            color: isDark
+                                ? AppColors.darkTextSecondary
+                                : Colors.grey.shade600,
                           ),
                         ),
                         GestureDetector(
@@ -288,16 +344,20 @@ class _SignInScreenState extends State<SignInScreen> {
   InputDecoration _inputDecoration({
     required String hint,
     required IconData icon,
+    bool isDark = false,
   }) {
+    final hintColor = isDark ? AppColors.darkTextHint : Colors.grey.shade400;
+    final borderColor = isDark ? AppColors.darkDivider : Colors.grey.shade300;
     return InputDecoration(
       hintText: hint,
-      hintStyle: GoogleFonts.poppins(fontSize: 14, color: Colors.grey.shade400),
-      prefixIcon: Icon(icon, color: Colors.grey.shade400, size: 22),
+      hintStyle: GoogleFonts.poppins(fontSize: 14, color: hintColor),
+      prefixIcon: Icon(icon, color: hintColor, size: 22),
       contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-      filled: false,
+      filled: true,
+      fillColor: isDark ? AppColors.darkCard : Colors.white,
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+        borderSide: BorderSide(color: borderColor, width: 1),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -315,23 +375,43 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   // ── Social circle button ──
-  Widget _socialIcon({required Widget child}) {
-    return Container(
+  Widget _socialIcon({required Widget child, bool isLoading = false}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
       width: 52,
       height: 52,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.white,
-        border: Border.all(color: Colors.grey.shade200, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: isDark ? AppColors.darkCard : Colors.white,
+        border: Border.all(
+          color: isLoading
+              ? AppColors.primary
+              : (isDark ? AppColors.darkDivider : Colors.grey.shade200),
+          width: isLoading ? 2 : 1,
+        ),
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
       ),
-      child: Center(child: child),
+      child: Center(
+        child: isLoading
+            ? SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.primary,
+                ),
+              )
+            : child,
+      ),
     );
   }
 }

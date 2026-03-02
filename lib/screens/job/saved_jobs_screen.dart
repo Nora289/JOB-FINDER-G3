@@ -24,7 +24,14 @@ class SavedJobsScreen extends StatelessWidget {
           'Saved Jobs',
           style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
         ),
-        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios,
+            size: 20,
+            color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: savedJobs.isEmpty
           ? Center(

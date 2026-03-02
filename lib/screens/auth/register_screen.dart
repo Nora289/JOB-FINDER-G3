@@ -97,9 +97,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               Expanded(
                                 child: TextFormField(
                                   controller: _firstNameController,
-                                  style: GoogleFonts.poppins(fontSize: 14),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    color: isDark
+                                        ? AppColors.darkTextPrimary
+                                        : AppColors.textPrimary,
+                                  ),
                                   decoration: _inputDecoration(
                                     hint: 'First-name',
+                                    isDark: isDark,
                                   ),
                                   validator: (v) => (v == null || v.isEmpty)
                                       ? 'Required'
@@ -110,9 +116,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               Expanded(
                                 child: TextFormField(
                                   controller: _lastNameController,
-                                  style: GoogleFonts.poppins(fontSize: 14),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    color: isDark
+                                        ? AppColors.darkTextPrimary
+                                        : AppColors.textPrimary,
+                                  ),
                                   decoration: _inputDecoration(
                                     hint: 'Last-name',
+                                    isDark: isDark,
                                   ),
                                   validator: (v) => (v == null || v.isEmpty)
                                       ? 'Required'
@@ -127,10 +139,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           TextFormField(
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
-                            style: GoogleFonts.poppins(fontSize: 14),
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              color: isDark
+                                  ? AppColors.darkTextPrimary
+                                  : AppColors.textPrimary,
+                            ),
                             decoration: _inputDecoration(
                               hint: 'Email or username',
                               icon: Icons.email_outlined,
+                              isDark: isDark,
                             ),
                             validator: (v) => (v == null || v.isEmpty)
                                 ? 'Please enter your email'
@@ -142,11 +160,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           TextFormField(
                             controller: _passwordController,
                             obscureText: _obscurePassword,
-                            style: GoogleFonts.poppins(fontSize: 14),
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              color: isDark
+                                  ? AppColors.darkTextPrimary
+                                  : AppColors.textPrimary,
+                            ),
                             decoration:
                                 _inputDecoration(
                                   hint: 'Password',
                                   icon: Icons.lock_outline,
+                                  isDark: isDark,
                                 ).copyWith(
                                   suffixIcon: IconButton(
                                     icon: Icon(
@@ -178,11 +202,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           TextFormField(
                             controller: _confirmPasswordController,
                             obscureText: _obscureConfirm,
-                            style: GoogleFonts.poppins(fontSize: 14),
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              color: isDark
+                                  ? AppColors.darkTextPrimary
+                                  : AppColors.textPrimary,
+                            ),
                             decoration:
                                 _inputDecoration(
                                   hint: 'Comfirm Password',
                                   icon: Icons.lock_outline,
+                                  isDark: isDark,
                                 ).copyWith(
                                   suffixIcon: IconButton(
                                     icon: Icon(
@@ -251,7 +281,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
+                                color: isDark
+                                    ? AppColors.darkTextPrimary
+                                    : AppColors.textPrimary,
                               ),
                             ),
                           ),
@@ -276,18 +308,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   // ── Shared input decoration ──
-  InputDecoration _inputDecoration({required String hint, IconData? icon}) {
+  InputDecoration _inputDecoration({
+    required String hint,
+    IconData? icon,
+    bool isDark = false,
+  }) {
+    final hintColor = isDark ? AppColors.darkTextHint : Colors.grey.shade400;
+    final borderColor = isDark ? AppColors.darkDivider : Colors.grey.shade300;
     return InputDecoration(
       hintText: hint,
-      hintStyle: GoogleFonts.poppins(fontSize: 14, color: Colors.grey.shade400),
-      prefixIcon: icon != null
-          ? Icon(icon, color: Colors.grey.shade400, size: 22)
-          : null,
+      hintStyle: GoogleFonts.poppins(fontSize: 14, color: hintColor),
+      prefixIcon: icon != null ? Icon(icon, color: hintColor, size: 22) : null,
       contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-      filled: false,
+      filled: true,
+      fillColor: isDark ? AppColors.darkCard : Colors.white,
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+        borderSide: BorderSide(color: borderColor, width: 1),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),

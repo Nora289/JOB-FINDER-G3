@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:job_finder/config/theme.dart';
+import 'package:job_finder/l10n/app_localizations.dart';
 import 'package:job_finder/providers/theme_provider.dart';
 
 class _NotifItem {
@@ -137,6 +138,7 @@ class NotificationsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = context.watch<ThemeProvider>().isDarkMode;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBg : Colors.white,
@@ -145,7 +147,7 @@ class NotificationsScreen extends StatelessWidget {
         elevation: 0,
         automaticallyImplyLeading: false,
         title: Text(
-          'Notifications',
+          l10n['notifications'] ?? 'Notifications',
           style: GoogleFonts.poppins(
             fontSize: 17,
             fontWeight: FontWeight.w600,
@@ -157,7 +159,7 @@ class NotificationsScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Text(
-              'Mark all read',
+              l10n['mark_all_read'] ?? 'Mark all read',
               style: GoogleFonts.poppins(
                 fontSize: 12,
                 color: AppColors.primary,
@@ -170,13 +172,16 @@ class NotificationsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         children: [
-          _sectionHeader('New activity', isDark),
+          _sectionHeader(l10n['new_activity'] ?? 'New activity', isDark),
           ..._newActivity.map((n) => _notifTile(n, isDark)),
           const SizedBox(height: 4),
-          _sectionHeaderWithSeeAll('Application', isDark),
+          _sectionHeaderWithSeeAll(
+            l10n['application'] ?? 'Application',
+            isDark,
+          ),
           ..._applications.map((n) => _notifTile(n, isDark)),
           const SizedBox(height: 4),
-          _sectionHeaderWithSeeAll('Interview', isDark),
+          _sectionHeaderWithSeeAll(l10n['interview'] ?? 'Interview', isDark),
           ..._interviews.map((n) => _notifTile(n, isDark)),
           const SizedBox(height: 20),
         ],
@@ -231,40 +236,37 @@ class NotificationsScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Avatar with logo image
+          // Avatar — styled like profile page
           Stack(
             children: [
               Container(
-                width: 52,
-                height: 52,
+                width: 54,
+                height: 54,
                 decoration: BoxDecoration(
-                  color: item.avatarColor,
                   shape: BoxShape.circle,
+                  color: item.avatarColor,
+                  boxShadow: [
+                    BoxShadow(
+                      color: item.avatarColor.withValues(alpha: 0.35),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
                 child: item.logoAsset != null
-                    ? Center(
-                        child: Container(
-                          width: 36,
-                          height: 36,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: ClipOval(
-                            child: Padding(
-                              padding: const EdgeInsets.all(5),
-                              child: Image.asset(
-                                item.logoAsset!,
-                                fit: BoxFit.contain,
-                                errorBuilder: (_, __, ___) => Center(
-                                  child: Text(
-                                    item.initials,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
-                                      color: item.avatarColor,
-                                    ),
-                                  ),
+                    ? ClipOval(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Image.asset(
+                            item.logoAsset!,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => Center(
+                              child: Text(
+                                item.initials,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
@@ -275,7 +277,7 @@ class NotificationsScreen extends StatelessWidget {
                         child: Text(
                           item.initials,
                           style: GoogleFonts.poppins(
-                            fontSize: 13,
+                            fontSize: 14,
                             fontWeight: FontWeight.w700,
                             color: Colors.white,
                           ),
@@ -287,8 +289,8 @@ class NotificationsScreen extends StatelessWidget {
                   right: 1,
                   bottom: 1,
                   child: Container(
-                    width: 13,
-                    height: 13,
+                    width: 14,
+                    height: 14,
                     decoration: BoxDecoration(
                       color: AppColors.success,
                       shape: BoxShape.circle,

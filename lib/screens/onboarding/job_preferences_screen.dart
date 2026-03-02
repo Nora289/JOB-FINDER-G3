@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:job_finder/config/theme.dart';
+import 'package:job_finder/providers/theme_provider.dart';
 
 class JobPreferencesScreen extends StatefulWidget {
   const JobPreferencesScreen({super.key});
@@ -43,13 +45,18 @@ class _JobPreferencesScreenState extends State<JobPreferencesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? AppColors.darkBg : Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary, size: 20),
+          icon: Icon(
+            Icons.arrow_back_ios,
+            color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+            size: 20,
+          ),
           onPressed: () => context.pop(),
         ),
         title: Text(
@@ -57,7 +64,7 @@ class _JobPreferencesScreenState extends State<JobPreferencesScreen> {
           style: GoogleFonts.poppins(
             fontSize: 18,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
           ),
         ),
         centerTitle: false,
@@ -70,7 +77,7 @@ class _JobPreferencesScreenState extends State<JobPreferencesScreen> {
             const SizedBox(height: 8),
 
             // ── Select Job Roles ──
-            _sectionHeader('Select job Roles'),
+            _sectionHeader('Select job Roles', isDark),
             const SizedBox(height: 14),
             Wrap(
               spacing: 10,
@@ -80,6 +87,7 @@ class _JobPreferencesScreenState extends State<JobPreferencesScreen> {
                 return _chip(
                   label: role,
                   selected: selected,
+                  isDark: isDark,
                   onTap: () {
                     setState(() {
                       if (selected) {
@@ -95,7 +103,7 @@ class _JobPreferencesScreenState extends State<JobPreferencesScreen> {
             const SizedBox(height: 28),
 
             // ── Select Location ──
-            _sectionHeader('Select Location'),
+            _sectionHeader('Select Location', isDark),
             const SizedBox(height: 14),
             Wrap(
               spacing: 10,
@@ -105,6 +113,7 @@ class _JobPreferencesScreenState extends State<JobPreferencesScreen> {
                 return _chip(
                   label: loc,
                   selected: selected,
+                  isDark: isDark,
                   onTap: () {
                     setState(() {
                       if (selected) {
@@ -120,7 +129,7 @@ class _JobPreferencesScreenState extends State<JobPreferencesScreen> {
             const SizedBox(height: 28),
 
             // ── Select Location (Job Type) ──
-            _sectionHeader('Select Location'),
+            _sectionHeader('Job Type', isDark),
             const SizedBox(height: 14),
             Row(
               children: _jobTypes.map((type) {
@@ -130,6 +139,7 @@ class _JobPreferencesScreenState extends State<JobPreferencesScreen> {
                   child: _chip(
                     label: type,
                     selected: selected,
+                    isDark: isDark,
                     onTap: () => setState(() => _selectedJobType = type),
                   ),
                 );
@@ -138,7 +148,7 @@ class _JobPreferencesScreenState extends State<JobPreferencesScreen> {
             const SizedBox(height: 28),
 
             // ── Office ──
-            _sectionHeader('Office'),
+            _sectionHeader('Office', isDark),
             const SizedBox(height: 14),
             Row(
               children: _officeTypes.map((type) {
@@ -148,6 +158,7 @@ class _JobPreferencesScreenState extends State<JobPreferencesScreen> {
                   child: _chip(
                     label: type,
                     selected: selected,
+                    isDark: isDark,
                     onTap: () => setState(() => _selectedOfficeType = type),
                   ),
                 );
@@ -186,7 +197,7 @@ class _JobPreferencesScreenState extends State<JobPreferencesScreen> {
     );
   }
 
-  Widget _sectionHeader(String title) {
+  Widget _sectionHeader(String title, bool isDark) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -195,7 +206,7 @@ class _JobPreferencesScreenState extends State<JobPreferencesScreen> {
           style: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
           ),
         ),
         GestureDetector(
@@ -204,7 +215,9 @@ class _JobPreferencesScreenState extends State<JobPreferencesScreen> {
             'See all',
             style: GoogleFonts.poppins(
               fontSize: 13,
-              color: AppColors.textSecondary,
+              color: isDark
+                  ? AppColors.darkTextSecondary
+                  : AppColors.textSecondary,
             ),
           ),
         ),
@@ -215,6 +228,7 @@ class _JobPreferencesScreenState extends State<JobPreferencesScreen> {
   Widget _chip({
     required String label,
     required bool selected,
+    required bool isDark,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
@@ -222,10 +236,18 @@ class _JobPreferencesScreenState extends State<JobPreferencesScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
-          color: selected ? AppColors.primary : Colors.white,
+          color: selected
+              ? AppColors.primary
+              : isDark
+              ? AppColors.darkCard
+              : Colors.white,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: selected ? AppColors.primary : Colors.grey.shade300,
+            color: selected
+                ? AppColors.primary
+                : isDark
+                ? AppColors.darkDivider
+                : Colors.grey.shade300,
             width: 1,
           ),
         ),
@@ -234,7 +256,11 @@ class _JobPreferencesScreenState extends State<JobPreferencesScreen> {
           style: GoogleFonts.poppins(
             fontSize: 13,
             fontWeight: FontWeight.w500,
-            color: selected ? Colors.white : AppColors.textPrimary,
+            color: selected
+                ? Colors.white
+                : isDark
+                ? AppColors.darkTextPrimary
+                : AppColors.textPrimary,
           ),
         ),
       ),

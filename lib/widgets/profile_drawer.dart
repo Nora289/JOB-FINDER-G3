@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:job_finder/config/theme.dart';
 import 'package:job_finder/providers/auth_provider.dart';
 import 'package:job_finder/providers/theme_provider.dart';
+import 'package:job_finder/widgets/user_avatar.dart';
 
 class ProfileDrawer extends StatelessWidget {
   const ProfileDrawer({super.key});
@@ -28,24 +29,7 @@ class ProfileDrawer extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Text(
-                        userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
-                        style: GoogleFonts.poppins(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
+                  UserAvatar(name: userName, radius: 32, fontSize: 22),
                   const SizedBox(height: 12),
                   Text(
                     userName,
@@ -81,14 +65,20 @@ class ProfileDrawer extends StatelessWidget {
               icon: Icons.assignment_outlined,
               label: 'Applications',
               isDark: isDark,
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/my-applications');
+              },
             ),
             _drawerItem(
               context,
               icon: Icons.people_outline,
               label: 'Proposals',
               isDark: isDark,
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/proposals');
+              },
             ),
             _drawerItem(
               context,
@@ -105,14 +95,20 @@ class ProfileDrawer extends StatelessWidget {
               icon: Icons.work_outline,
               label: 'Portfolio',
               isDark: isDark,
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/portfolio');
+              },
             ),
             _drawerItem(
               context,
               icon: Icons.mail_outline,
               label: 'Cover Letters',
               isDark: isDark,
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/cover-letter');
+              },
             ),
 
             const Spacer(),
@@ -228,8 +224,9 @@ class ProfileDrawer extends StatelessWidget {
               label,
               style: GoogleFonts.poppins(
                 fontSize: 14,
-                color:
-                    isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+                color: isDark
+                    ? AppColors.darkTextPrimary
+                    : AppColors.textPrimary,
               ),
             ),
           ],

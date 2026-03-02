@@ -4,8 +4,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:job_finder/config/theme.dart';
 import 'package:job_finder/providers/auth_provider.dart';
+import 'package:job_finder/providers/job_provider.dart';
 import 'package:job_finder/providers/theme_provider.dart';
+import 'package:job_finder/l10n/app_localizations.dart';
 import 'package:job_finder/widgets/user_avatar.dart';
+import 'package:job_finder/screens/profile/application_stats_screen.dart';
+import 'package:job_finder/screens/job/career_resources_screen.dart';
+import 'package:job_finder/screens/job/job_alerts_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -15,20 +20,24 @@ class ProfileScreen extends StatelessWidget {
     final auth = context.watch<AuthProvider>();
     final themeProvider = context.watch<ThemeProvider>();
     final isDark = themeProvider.isDarkMode;
+    final jobProvider = context.watch<JobProvider>();
+    final appliedCount = jobProvider.appliedJobs.length;
+    final savedCount = jobProvider.savedJobs.length;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBg : AppColors.background,
       appBar: AppBar(
         backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
         title: Text(
-          'Profile',
+          l10n['profile'] ?? 'Profile',
           style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
         ),
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined),
-            onPressed: () {},
+            onPressed: () => context.push('/help-center'),
           ),
         ],
       ),
@@ -82,7 +91,7 @@ class ProfileScreen extends StatelessWidget {
                   ],
                   const SizedBox(height: 16),
                   OutlinedButton.icon(
-                    onPressed: () {},
+                    onPressed: () => context.push('/edit-profile'),
                     icon: Icon(
                       Icons.edit_outlined,
                       size: 18,
@@ -91,7 +100,7 @@ class ProfileScreen extends StatelessWidget {
                           : AppColors.primary,
                     ),
                     label: Text(
-                      'Edit Profile',
+                      l10n['edit_profile'] ?? 'Edit Profile',
                       style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
                     ),
                     style: OutlinedButton.styleFrom(
@@ -117,26 +126,48 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             // Stats
-            Container(
-              color: isDark ? AppColors.darkSurface : Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _statItem('3', 'Applied', isDark),
-                  Container(
-                    width: 1,
-                    height: 40,
-                    color: isDark ? AppColors.darkDivider : AppColors.divider,
-                  ),
-                  _statItem('2', 'Saved', isDark),
-                  Container(
-                    width: 1,
-                    height: 40,
-                    color: isDark ? AppColors.darkDivider : AppColors.divider,
-                  ),
-                  _statItem('1', 'Interview', isDark),
-                ],
+            GestureDetector(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const ApplicationStatsScreen(),
+                ),
+              ),
+              child: Container(
+                color: isDark ? AppColors.darkSurface : Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _statItem(
+                      '$appliedCount',
+                      l10n['applied'] ?? 'Applied',
+                      isDark,
+                    ),
+                    Container(
+                      width: 1,
+                      height: 40,
+                      color: isDark ? AppColors.darkDivider : AppColors.divider,
+                    ),
+                    _statItem('$savedCount', l10n['saved'] ?? 'Saved', isDark),
+                    Container(
+                      width: 1,
+                      height: 40,
+                      color: isDark ? AppColors.darkDivider : AppColors.divider,
+                    ),
+                    _statItem('1', l10n['interview'] ?? 'Interview', isDark),
+                    Container(
+                      width: 1,
+                      height: 40,
+                      color: isDark ? AppColors.darkDivider : AppColors.divider,
+                    ),
+                    _statItem(
+                      '${jobProvider.compareList.length}',
+                      'Compare',
+                      isDark,
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -147,30 +178,87 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   _menuItem(
                     icon: Icons.description_outlined,
-                    title: 'My Resume',
+                    title: l10n['my_resume'] ?? 'My Resume',
                     onTap: () => context.push('/resume'),
                     isDark: isDark,
                   ),
                   _divider(isDark),
                   _menuItem(
                     icon: Icons.work_outline,
-                    title: 'My Applications',
-                    badge: '3',
-                    onTap: () {},
+                    title: l10n['my_applications'] ?? 'My Applications',
+                    badge: appliedCount > 0 ? '$appliedCount' : null,
+                    onTap: () => context.push('/my-applications'),
                     isDark: isDark,
                   ),
                   _divider(isDark),
                   _menuItem(
                     icon: Icons.bookmark_border,
-                    title: 'Saved Jobs',
+                    title: l10n['saved_jobs'] ?? 'Saved Jobs',
                     onTap: () => context.push('/saved-jobs'),
                     isDark: isDark,
                   ),
                   _divider(isDark),
                   _menuItem(
                     icon: Icons.business_outlined,
-                    title: 'Following Companies',
-                    onTap: () {},
+                    title: l10n['following_companies'] ?? 'Following Companies',
+                    onTap: () => context.push('/following-companies'),
+                    isDark: isDark,
+                  ),
+                  _divider(isDark),
+                  _menuItem(
+                    icon: Icons.notifications_active_outlined,
+                    title: 'Job Alerts',
+                    badge: jobProvider.jobAlerts.isNotEmpty
+                        ? '${jobProvider.jobAlerts.length}'
+                        : null,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const JobAlertsScreen(),
+                      ),
+                    ),
+                    isDark: isDark,
+                  ),
+                  _divider(isDark),
+                  _menuItem(
+                    icon: Icons.compare_arrows_rounded,
+                    title: 'Compare Jobs',
+                    badge: jobProvider.compareList.isNotEmpty
+                        ? '${jobProvider.compareList.length}'
+                        : null,
+                    onTap: () => context.push('/compare-jobs'),
+                    isDark: isDark,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Career Tools
+            Container(
+              color: isDark ? AppColors.darkSurface : Colors.white,
+              child: Column(
+                children: [
+                  _menuItem(
+                    icon: Icons.bar_chart_outlined,
+                    title: 'Application Statistics',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ApplicationStatsScreen(),
+                      ),
+                    ),
+                    isDark: isDark,
+                  ),
+                  _divider(isDark),
+                  _menuItem(
+                    icon: Icons.menu_book_outlined,
+                    title: 'Career Resources',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const CareerResourcesScreen(),
+                      ),
+                    ),
                     isDark: isDark,
                   ),
                 ],
@@ -184,14 +272,14 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   _menuItem(
                     icon: Icons.notifications_outlined,
-                    title: 'Notifications',
-                    onTap: () {},
+                    title: l10n['notifications'] ?? 'Notifications',
+                    onTap: () => context.push('/notifications'),
                     isDark: isDark,
                   ),
                   _divider(isDark),
                   _menuItem(
                     icon: Icons.dark_mode_outlined,
-                    title: 'Dark Mode',
+                    title: l10n['dark_mode'] ?? 'Dark Mode',
                     trailing: Switch(
                       value: isDark,
                       onChanged: (val) => themeProvider.toggleTheme(),
@@ -203,23 +291,25 @@ class ProfileScreen extends StatelessWidget {
                   _divider(isDark),
                   _menuItem(
                     icon: Icons.language,
-                    title: 'Language',
-                    subtitle: 'English',
-                    onTap: () {},
+                    title: l10n['language'] ?? 'Language',
+                    subtitle: l10n.languageCode == 'km'
+                        ? 'ភាសាខ្មែរ'
+                        : 'English',
+                    onTap: () => context.push('/language'),
                     isDark: isDark,
                   ),
                   _divider(isDark),
                   _menuItem(
                     icon: Icons.help_outline,
-                    title: 'Help Center',
-                    onTap: () {},
+                    title: l10n['help_center'] ?? 'Help Center',
+                    onTap: () => context.push('/help-center'),
                     isDark: isDark,
                   ),
                   _divider(isDark),
                   _menuItem(
                     icon: Icons.info_outline,
-                    title: 'About',
-                    onTap: () {},
+                    title: l10n['about'] ?? 'About',
+                    onTap: () => context.push('/about'),
                     isDark: isDark,
                   ),
                 ],
@@ -231,7 +321,7 @@ class ProfileScreen extends StatelessWidget {
               color: isDark ? AppColors.darkSurface : Colors.white,
               child: _menuItem(
                 icon: Icons.logout,
-                title: 'Log Out',
+                title: l10n['log_out'] ?? 'Log Out',
                 iconColor: AppColors.error,
                 titleColor: AppColors.error,
                 isDark: isDark,
@@ -240,17 +330,22 @@ class ProfileScreen extends StatelessWidget {
                     context: context,
                     builder: (ctx) => AlertDialog(
                       title: Text(
-                        'Log Out',
+                        l10n['log_out'] ?? 'Log Out',
                         style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                       ),
                       content: Text(
-                        'Are you sure you want to log out?',
+                        l10n.languageCode == 'km'
+                            ? 'តើអ្នកពិតជាចង់ចាកចេញមែនទេ?'
+                            : 'Are you sure you want to log out?',
                         style: GoogleFonts.poppins(),
                       ),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(ctx),
-                          child: Text('Cancel', style: GoogleFonts.poppins()),
+                          child: Text(
+                            l10n['cancel'] ?? 'Cancel',
+                            style: GoogleFonts.poppins(),
+                          ),
                         ),
                         TextButton(
                           onPressed: () {
@@ -259,7 +354,7 @@ class ProfileScreen extends StatelessWidget {
                             context.go('/sign-in');
                           },
                           child: Text(
-                            'Log Out',
+                            l10n['log_out'] ?? 'Log Out',
                             style: GoogleFonts.poppins(color: AppColors.error),
                           ),
                         ),

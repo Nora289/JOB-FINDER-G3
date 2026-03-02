@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:job_finder/config/theme.dart';
 import 'package:job_finder/providers/job_provider.dart';
 import 'package:job_finder/providers/theme_provider.dart';
+import 'package:job_finder/widgets/quick_apply_sheet.dart';
 
 class JobDetailScreen extends StatelessWidget {
   final String jobId;
@@ -41,6 +43,42 @@ class JobDetailScreen extends StatelessWidget {
             actions: [
               IconButton(
                 icon: Icon(
+                  jobProvider.isInCompare(job.id)
+                      ? Icons.compare_arrows_rounded
+                      : Icons.compare_arrows_outlined,
+                  color: Colors.white,
+                ),
+                tooltip: 'Compare',
+                onPressed: () {
+                  jobProvider.toggleCompare(job.id);
+                  final inCompare = jobProvider.isInCompare(job.id);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        inCompare
+                            ? 'Added to comparison'
+                            : 'Removed from comparison',
+                        style: GoogleFonts.poppins(fontSize: 13),
+                      ),
+                      backgroundColor: AppColors.primary,
+                      behavior: SnackBarBehavior.floating,
+                      duration: const Duration(seconds: 2),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      action: inCompare
+                          ? SnackBarAction(
+                              label: 'View',
+                              textColor: Colors.white,
+                              onPressed: () => context.push('/compare-jobs'),
+                            )
+                          : null,
+                    ),
+                  );
+                },
+              ),
+              IconButton(
+                icon: Icon(
                   job.isSaved ? Icons.bookmark : Icons.bookmark_border,
                   color: Colors.white,
                 ),
@@ -48,7 +86,7 @@ class JobDetailScreen extends StatelessWidget {
               ),
               IconButton(
                 icon: const Icon(Icons.share_outlined, color: Colors.white),
-                onPressed: () {},
+                onPressed: () => _shareJob(context, job.title, job.companyName),
               ),
             ],
             flexibleSpace: FlexibleSpaceBar(
@@ -120,13 +158,55 @@ class JobDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Urgent badge
+                  if (job.isUrgent)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(
+                            0xFFFF6B35,
+                          ).withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: const Color(
+                              0xFFFF6B35,
+                            ).withValues(alpha: 0.4),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.local_fire_department_rounded,
+                              color: Color(0xFFFF6B35),
+                              size: 15,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Urgent Hiring',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFFFF6B35),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   // Info row
                   Row(
                     children: [
-                      _infoCard(
-                        Icons.location_on_outlined,
+                      _locationCard(
+                        context,
                         job.location,
-                        'Location',
+                        jobProvider,
+                        job.companyName,
                       ),
                       const SizedBox(width: 12),
                       _infoCard(Icons.attach_money, job.salary, 'Salary'),
@@ -137,7 +217,30 @@ class JobDetailScreen extends StatelessWidget {
                     children: [
                       _infoCard(Icons.work_outline, job.type, 'Job Type'),
                       const SizedBox(width: 12),
-                      _infoCard(Icons.access_time, job.postedDate, 'Posted'),
+                      _infoCard(
+                        Icons.bar_chart_outlined,
+                        job.experienceLevel,
+                        'Experience',
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      _infoCard(
+                        Icons.category_outlined,
+                        job.category,
+                        'Category',
+                      ),
+                      const SizedBox(width: 12),
+                      if (job.deadline != null)
+                        _infoCard(
+                          Icons.event_outlined,
+                          job.deadline!,
+                          'Apply Before',
+                        )
+                      else
+                        _infoCard(Icons.access_time, job.postedDate, 'Posted'),
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -297,7 +400,7 @@ class JobDetailScreen extends StatelessWidget {
       ),
       // Apply button
       bottomSheet: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkSurface : Colors.white,
           boxShadow: [
@@ -308,25 +411,150 @@ class JobDetailScreen extends StatelessWidget {
             ),
           ],
         ),
-        child: SizedBox(
-          width: double.infinity,
-          height: 52,
-          child: ElevatedButton(
-            onPressed: () => context.push('/job-apply/${job.id}'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+        child: Row(
+          children: [
+            // Quick Apply button
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () => showQuickApplySheet(context, job),
+                icon: const Icon(Icons.flash_on_rounded, size: 18),
+                label: Text(
+                  'Quick Apply',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.primary,
+                  side: const BorderSide(color: AppColors.primary, width: 1.5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
               ),
             ),
-            child: Text(
-              'Apply Now',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+            const SizedBox(width: 12),
+            // Full Apply button
+            Expanded(
+              flex: 2,
+              child: ElevatedButton(
+                onPressed: () => context.push('/job-apply/${job.id}'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                child: Text(
+                  'Apply Now',
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _shareJob(BuildContext context, String title, String company) {
+    final text =
+        '\ud83d\udcbc $title at $company\n\nFound on Job Finder app! Check it out.';
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Job link copied to clipboard!',
+          style: GoogleFonts.poppins(fontSize: 13),
+        ),
+        backgroundColor: AppColors.primary,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
+  Widget _locationCard(
+    BuildContext context,
+    String location,
+    JobProvider jobProvider,
+    String companyName,
+  ) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final company = jobProvider.getCompanyByName(companyName);
+    return Expanded(
+      child: GestureDetector(
+        onTap: company != null
+            ? () => context.push('/company-location/${company.id}')
+            : null,
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: dark ? AppColors.darkCard : AppColors.background,
+            borderRadius: BorderRadius.circular(12),
+            border: company != null
+                ? Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.3),
+                    width: 1,
+                  )
+                : null,
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.location_on_outlined,
+                color: AppColors.primary,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Location',
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        color: dark
+                            ? AppColors.darkTextHint
+                            : AppColors.textHint,
+                      ),
+                    ),
+                    Text(
+                      location,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: dark
+                            ? AppColors.darkTextPrimary
+                            : AppColors.textPrimary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (company != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        'View on map →',
+                        style: GoogleFonts.poppins(
+                          fontSize: 10,
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),

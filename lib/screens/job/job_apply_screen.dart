@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:job_finder/config/theme.dart';
 import 'package:job_finder/providers/auth_provider.dart';
+import 'package:job_finder/providers/job_provider.dart';
 import 'package:job_finder/providers/theme_provider.dart';
 import 'package:job_finder/widgets/user_avatar.dart';
 
@@ -51,10 +52,10 @@ class _JobApplyScreenState extends State<JobApplyScreen> {
         backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios,
             size: 20,
-            color: AppColors.textPrimary,
+            color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -63,7 +64,7 @@ class _JobApplyScreenState extends State<JobApplyScreen> {
           style: GoogleFonts.poppins(
             fontSize: 17,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
           ),
         ),
         centerTitle: true,
@@ -81,7 +82,9 @@ class _JobApplyScreenState extends State<JobApplyScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: isDark
+                    ? AppColors.darkTextPrimary
+                    : AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 16),
@@ -132,14 +135,18 @@ class _JobApplyScreenState extends State<JobApplyScreen> {
                           style: GoogleFonts.poppins(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color: AppColors.textPrimary,
+                            color: isDark
+                                ? AppColors.darkTextPrimary
+                                : AppColors.textPrimary,
                           ),
                         ),
                         Text(
                           profile['subtitle']!,
                           style: GoogleFonts.poppins(
                             fontSize: 11,
-                            color: AppColors.textHint,
+                            color: isDark
+                                ? AppColors.darkTextHint
+                                : AppColors.textHint,
                           ),
                         ),
                       ],
@@ -156,7 +163,9 @@ class _JobApplyScreenState extends State<JobApplyScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: isDark
+                    ? AppColors.darkTextPrimary
+                    : AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 12),
@@ -175,11 +184,15 @@ class _JobApplyScreenState extends State<JobApplyScreen> {
                     decoration: BoxDecoration(
                       color: isSelected
                           ? AppColors.primary.withValues(alpha: 0.1)
+                          : isDark
+                          ? AppColors.darkCard
                           : Colors.white,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color: isSelected
                             ? AppColors.primary
+                            : isDark
+                            ? AppColors.darkDivider
                             : Colors.grey.shade300,
                       ),
                     ),
@@ -208,6 +221,8 @@ class _JobApplyScreenState extends State<JobApplyScreen> {
                             fontWeight: FontWeight.w500,
                             color: isSelected
                                 ? AppColors.primary
+                                : isDark
+                                ? AppColors.darkTextPrimary
                                 : AppColors.textPrimary,
                           ),
                         ),
@@ -228,7 +243,9 @@ class _JobApplyScreenState extends State<JobApplyScreen> {
                     style: GoogleFonts.poppins(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: isDark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.textPrimary,
                     ),
                   ),
                   TextSpan(
@@ -236,7 +253,9 @@ class _JobApplyScreenState extends State<JobApplyScreen> {
                     style: GoogleFonts.poppins(
                       fontSize: 13,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.textHint,
+                      color: isDark
+                          ? AppColors.darkTextHint
+                          : AppColors.textHint,
                     ),
                   ),
                 ],
@@ -246,20 +265,35 @@ class _JobApplyScreenState extends State<JobApplyScreen> {
             TextFormField(
               controller: _messageController,
               maxLines: 5,
-              style: GoogleFonts.poppins(fontSize: 14),
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: isDark
+                    ? AppColors.darkTextPrimary
+                    : AppColors.textPrimary,
+              ),
               decoration: InputDecoration(
                 hintText: 'Dear Hiring Manager,.....',
                 hintStyle: GoogleFonts.poppins(
                   fontSize: 14,
-                  color: AppColors.textHint,
+                  color: isDark ? AppColors.darkTextHint : AppColors.textHint,
                 ),
+                filled: true,
+                fillColor: isDark ? AppColors.darkCard : Colors.white,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
+                  borderSide: BorderSide(
+                    color: isDark
+                        ? AppColors.darkDivider
+                        : Colors.grey.shade300,
+                  ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
+                  borderSide: BorderSide(
+                    color: isDark
+                        ? AppColors.darkDivider
+                        : Colors.grey.shade300,
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -282,10 +316,19 @@ class _JobApplyScreenState extends State<JobApplyScreen> {
                     ? null
                     : () {
                         setState(() => _isSubmitting = true);
+                        final jobProvider = context.read<JobProvider>();
+                        jobProvider.applyJob(widget.jobId);
+                        final job = jobProvider.jobs.firstWhere(
+                          (j) => j.id == widget.jobId,
+                          orElse: () => jobProvider.jobs.first,
+                        );
                         final router = GoRouter.of(context);
                         Future.delayed(const Duration(seconds: 1), () {
                           if (!mounted) return;
-                          router.go('/apply-success');
+                          router.go(
+                            '/apply-success',
+                            extra: {'jobTitle': job.title},
+                          );
                         });
                       },
                 style: ElevatedButton.styleFrom(
