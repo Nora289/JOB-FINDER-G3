@@ -6,6 +6,7 @@ import 'package:job_finder/config/theme.dart';
 import 'package:job_finder/providers/job_provider.dart';
 import 'package:job_finder/providers/theme_provider.dart';
 import 'package:job_finder/widgets/job_card.dart';
+import 'package:job_finder/l10n/app_localizations.dart';
 
 class SavedJobsScreen extends StatelessWidget {
   const SavedJobsScreen({super.key});
@@ -21,7 +22,7 @@ class SavedJobsScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
         title: Text(
-          'Saved Jobs',
+          context.tr('saved_jobs'),
           style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
         ),
         leading: IconButton(

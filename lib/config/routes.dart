@@ -122,10 +122,6 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(path: '/resume', builder: (context, state) => const ResumeScreen()),
     GoRoute(
-      path: '/my-applications',
-      builder: (context, state) => const MyApplicationsScreen(),
-    ),
-    GoRoute(
       path: '/proposals',
       builder: (context, state) => const ProposalsScreen(),
     ),

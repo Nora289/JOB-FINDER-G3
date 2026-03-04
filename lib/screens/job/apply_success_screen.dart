@@ -7,6 +7,7 @@ import 'package:job_finder/providers/auth_provider.dart';
 import 'package:job_finder/providers/job_provider.dart';
 import 'package:job_finder/providers/resume_provider.dart';
 import 'package:job_finder/providers/theme_provider.dart';
+import 'package:job_finder/l10n/app_localizations.dart';
 
 class ApplySuccessScreen extends StatelessWidget {
   final String? jobTitle;
@@ -43,7 +44,7 @@ class ApplySuccessScreen extends StatelessWidget {
 
               // ── Successful text ──
               Text(
-                'Successful',
+                context.tr('successful'),
                 style: GoogleFonts.poppins(
                   fontSize: 26,
                   fontWeight: FontWeight.w700,
@@ -114,7 +115,7 @@ class ApplySuccessScreen extends StatelessWidget {
                   ),
                   icon: const Icon(Icons.description_outlined, size: 20),
                   label: Text(
-                    'View My CV',
+                    context.tr('view_cv'),
                     style: GoogleFonts.poppins(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
@@ -139,7 +140,7 @@ class ApplySuccessScreen extends StatelessWidget {
                   ),
                   icon: const Icon(Icons.article_outlined, size: 20),
                   label: Text(
-                    'View Cover Letter',
+                    context.tr('view_cover_letter'),
                     style: GoogleFonts.poppins(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
@@ -169,7 +170,7 @@ class ApplySuccessScreen extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    'Back Home',
+                    context.tr('back_home'),
                     style: GoogleFonts.poppins(
                       fontSize: 15,
                       fontWeight: FontWeight.w500,

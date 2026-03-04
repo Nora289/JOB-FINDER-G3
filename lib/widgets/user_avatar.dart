@@ -34,21 +34,21 @@ class UserAvatar extends StatelessWidget {
     this.fontSize = 28,
   });
 
-  /// Generate a deterministic color from the user's name
+  /// Generate a deterministic blue color from the user's name
   Color _generateColor(String name) {
     const colors = [
-      Color(0xFF4A90D9),
-      Color(0xFF50C878),
-      Color(0xFFE74C3C),
-      Color(0xFF9B59B6),
-      Color(0xFFF39C12),
-      Color(0xFF1ABC9C),
-      Color(0xFFE91E63),
-      Color(0xFF3F51B5),
-      Color(0xFF009688),
-      Color(0xFFFF5722),
-      Color(0xFF795548),
-      Color(0xFF607D8B),
+      Color(0xFF1565C0), // Primary blue
+      Color(0xFF1976D2), // Medium blue
+      Color(0xFF1E88E5), // Bright blue
+      Color(0xFF0D47A1), // Deep blue
+      Color(0xFF42A5F5), // Light blue
+      Color(0xFF2196F3), // Accent blue
+      Color(0xFF0A1F44), // Navy
+      Color(0xFF1A237E), // Indigo
+      Color(0xFF283593), // Indigo 800
+      Color(0xFF3949AB), // Indigo 600
+      Color(0xFF1565C0), // Primary blue
+      Color(0xFF0277BD), // Light blue 800
     ];
     int hash = 0;
     for (int i = 0; i < name.length; i++) {

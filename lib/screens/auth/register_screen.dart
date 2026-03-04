@@ -150,9 +150,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               icon: Icons.email_outlined,
                               isDark: isDark,
                             ),
-                            validator: (v) => (v == null || v.isEmpty)
-                                ? 'Please enter your email'
-                                : null,
+                            validator: (v) {
+                              if (v == null || v.trim().isEmpty) {
+                                return 'Please enter your email';
+                              }
+                              final emailRegex = RegExp(
+                                r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+                              );
+                              if (!emailRegex.hasMatch(v.trim())) {
+                                return 'Please enter a valid email address';
+                              }
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 18),
 

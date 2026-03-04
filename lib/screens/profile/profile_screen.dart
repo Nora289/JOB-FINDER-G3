@@ -207,7 +207,7 @@ class ProfileScreen extends StatelessWidget {
                   _divider(isDark),
                   _menuItem(
                     icon: Icons.notifications_active_outlined,
-                    title: 'Job Alerts',
+                    title: l10n['job_alerts'] ?? 'Job Alerts',
                     badge: jobProvider.jobAlerts.isNotEmpty
                         ? '${jobProvider.jobAlerts.length}'
                         : null,
@@ -222,7 +222,7 @@ class ProfileScreen extends StatelessWidget {
                   _divider(isDark),
                   _menuItem(
                     icon: Icons.compare_arrows_rounded,
-                    title: 'Compare Jobs',
+                    title: l10n['compare_jobs'] ?? 'Compare Jobs',
                     badge: jobProvider.compareList.isNotEmpty
                         ? '${jobProvider.compareList.length}'
                         : null,

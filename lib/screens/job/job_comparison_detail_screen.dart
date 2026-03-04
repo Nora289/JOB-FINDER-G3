@@ -6,6 +6,7 @@ import '../../config/theme.dart';
 import '../../models/job_model.dart';
 import '../../providers/job_provider.dart';
 import '../../providers/theme_provider.dart';
+import '../../l10n/app_localizations.dart';
 
 class JobComparisonDetailScreen extends StatefulWidget {
   const JobComparisonDetailScreen({super.key});
@@ -139,7 +140,9 @@ class _JobComparisonDetailScreenState extends State<JobComparisonDetailScreen> {
                 color: AppColors.primary,
               ),
               label: Text(
-                'AI Match',
+                context.tr('interview_tips') == 'Interview Tips'
+                    ? 'AI Match'
+                    : 'AI ផ្គូផ្គង',
                 style: GoogleFonts.poppins(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -185,7 +188,7 @@ class _JobComparisonDetailScreenState extends State<JobComparisonDetailScreen> {
                     onPressed: () => _showAddJobSheet(availableJobs, isDark),
                     icon: const Icon(Icons.add_circle_outline, size: 18),
                     label: Text(
-                      'Add Job',
+                      '${context.tr('add')} ${context.tr('jobs')}',
                       style: GoogleFonts.poppins(fontSize: 13),
                     ),
                   ),
@@ -333,7 +336,9 @@ class _JobComparisonDetailScreenState extends State<JobComparisonDetailScreen> {
                           Icon(Icons.stars, color: Colors.amber, size: 16),
                           const SizedBox(width: 4),
                           Text(
-                            'Best Match',
+                            context.tr('compare') == 'Compare'
+                                ? 'Best Match'
+                                : 'ល្អបំផុត',
                             style: GoogleFonts.poppins(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,

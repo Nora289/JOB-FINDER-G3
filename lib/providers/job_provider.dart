@@ -8,7 +8,7 @@ class JobProvider extends ChangeNotifier {
   List<JobModel> _savedJobs = [];
   final List<JobModel> _appliedJobs = [];
   List<CompanyModel> _companies = [];
-  final bool _isLoading = false;
+  bool _isLoading = false;
 
   // ── Application Status Tracking ──
   final Map<String, ApplicationStatus> _applicationStatuses = {};
@@ -1080,7 +1080,7 @@ class JobProvider extends ChangeNotifier {
         id: '30',
         title: 'Credit Officer',
         companyName: 'Sathapana Bank',
-        companyLogo: 'assets/images/Sathapana Bank.png',
+        companyLogo: 'assets/images/sathapana bank.png',
         location: 'Phnom Penh',
         salary: '\$900 - \$1,400',
         type: 'Full-time',
@@ -1130,6 +1130,7 @@ class JobProvider extends ChangeNotifier {
   }
 
   void applyJob(String jobId) {
+    if (_jobs.isEmpty) return;
     final job = _jobs.firstWhere(
       (j) => j.id == jobId,
       orElse: () => _jobs.first,

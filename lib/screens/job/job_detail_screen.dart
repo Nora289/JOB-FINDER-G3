@@ -7,6 +7,7 @@ import 'package:job_finder/config/theme.dart';
 import 'package:job_finder/providers/job_provider.dart';
 import 'package:job_finder/providers/theme_provider.dart';
 import 'package:job_finder/widgets/quick_apply_sheet.dart';
+import 'package:job_finder/l10n/app_localizations.dart';
 
 class JobDetailScreen extends StatelessWidget {
   final String jobId;
@@ -209,18 +210,26 @@ class JobDetailScreen extends StatelessWidget {
                         job.companyName,
                       ),
                       const SizedBox(width: 12),
-                      _infoCard(Icons.attach_money, job.salary, 'Salary'),
+                      _infoCard(
+                        Icons.attach_money,
+                        job.salary,
+                        context.tr('salary'),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      _infoCard(Icons.work_outline, job.type, 'Job Type'),
+                      _infoCard(
+                        Icons.work_outline,
+                        job.type,
+                        context.tr('job_type'),
+                      ),
                       const SizedBox(width: 12),
                       _infoCard(
                         Icons.bar_chart_outlined,
                         job.experienceLevel,
-                        'Experience',
+                        context.tr('experience'),
                       ),
                     ],
                   ),
@@ -246,7 +255,7 @@ class JobDetailScreen extends StatelessWidget {
                   const SizedBox(height: 24),
                   // Description
                   Text(
-                    'Job Description',
+                    context.tr('job_description'),
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -269,7 +278,7 @@ class JobDetailScreen extends StatelessWidget {
                   const SizedBox(height: 24),
                   // Requirements
                   Text(
-                    'Requirements',
+                    context.tr('requirements'),
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -450,7 +459,7 @@ class JobDetailScreen extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 child: Text(
-                  'Apply Now',
+                  context.tr('apply_now'),
                   style: GoogleFonts.poppins(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -520,7 +529,7 @@ class JobDetailScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Location',
+                      context.tr('location'),
                       style: GoogleFonts.poppins(
                         fontSize: 11,
                         color: dark

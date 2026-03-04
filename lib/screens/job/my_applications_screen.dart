@@ -5,6 +5,7 @@ import 'package:job_finder/config/theme.dart';
 import 'package:job_finder/providers/job_provider.dart';
 import 'package:job_finder/providers/theme_provider.dart';
 import 'package:job_finder/screens/job/application_status_screen.dart';
+import 'package:job_finder/l10n/app_localizations.dart';
 
 class MyApplicationsScreen extends StatelessWidget {
   const MyApplicationsScreen({super.key});
@@ -30,7 +31,7 @@ class MyApplicationsScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'My Applications',
+          context.tr('my_applications'),
           style: GoogleFonts.poppins(
             fontSize: 17,
             fontWeight: FontWeight.w600,

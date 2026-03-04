@@ -40,9 +40,13 @@ class _QuickApplySheetState extends State<_QuickApplySheet> {
     await Future.delayed(const Duration(milliseconds: 1200));
     if (!mounted) return;
     final jobProvider = context.read<JobProvider>();
+    final jobTitle = widget.job.title;
     jobProvider.applyJob(widget.job.id);
-    Navigator.pop(context);
-    context.push('/apply-success', extra: {'jobTitle': widget.job.title});
+    final nav = Navigator.of(context);
+    nav.pop();
+    if (mounted) {
+      context.push('/apply-success', extra: {'jobTitle': jobTitle});
+    }
   }
 
   @override

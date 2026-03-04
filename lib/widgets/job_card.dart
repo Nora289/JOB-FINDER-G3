@@ -143,12 +143,49 @@ class JobCard extends StatelessWidget {
     }
     // Try to parse deadline and show countdown
     try {
-      final parts = deadline.split('/');
-      if (parts.length == 3) {
-        final day = int.parse(parts[0]);
-        final month = int.parse(parts[1]);
-        final year = int.parse(parts[2]);
-        final deadlineDate = DateTime(year, month, day);
+      DateTime? deadlineDate;
+
+      // Support 'Month DD, YYYY' format (e.g. 'March 20, 2026')
+      final monthNames = {
+        'january': 1,
+        'february': 2,
+        'march': 3,
+        'april': 4,
+        'may': 5,
+        'june': 6,
+        'july': 7,
+        'august': 8,
+        'september': 9,
+        'october': 10,
+        'november': 11,
+        'december': 12,
+      };
+      final textMatch = RegExp(
+        r'(\w+)\s+(\d{1,2}),?\s+(\d{4})',
+      ).firstMatch(deadline);
+      if (textMatch != null) {
+        final monthNum = monthNames[textMatch.group(1)!.toLowerCase()];
+        if (monthNum != null) {
+          deadlineDate = DateTime(
+            int.parse(textMatch.group(3)!),
+            monthNum,
+            int.parse(textMatch.group(2)!),
+          );
+        }
+      }
+
+      // Fallback: support dd/MM/yyyy format
+      if (deadlineDate == null) {
+        final parts = deadline.split('/');
+        if (parts.length == 3) {
+          final day = int.parse(parts[0]);
+          final month = int.parse(parts[1]);
+          final year = int.parse(parts[2]);
+          deadlineDate = DateTime(year, month, day);
+        }
+      }
+
+      if (deadlineDate != null) {
         final now = DateTime.now();
         final diff = deadlineDate.difference(now).inDays;
         if (diff < 0) {

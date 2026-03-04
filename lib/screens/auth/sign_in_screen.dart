@@ -61,7 +61,7 @@ class _SignInScreenState extends State<SignInScreen> {
     );
     setState(() => _isLoading = false);
     if (success && mounted) {
-      context.go('/onboarding');
+      context.go('/main');
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Invalid email or password')),
@@ -303,12 +303,12 @@ class _SignInScreenState extends State<SignInScreen> {
                     ),
                     const SizedBox(height: 32),
 
-                    // ── Have an account? Login ──
+                    // ── Don't have an account? Register ──
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Have an account? ',
+                          'Don\'t have an account? ',
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             color: isDark
@@ -319,7 +319,7 @@ class _SignInScreenState extends State<SignInScreen> {
                         GestureDetector(
                           onTap: () => context.go('/register'),
                           child: Text(
-                            'Login',
+                            'Register',
                             style: GoogleFonts.poppins(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,

@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:job_finder/config/theme.dart';
 import 'package:job_finder/providers/auth_provider.dart';
 import 'package:job_finder/providers/job_provider.dart';
 import 'package:job_finder/providers/theme_provider.dart';
 import 'package:job_finder/widgets/user_avatar.dart';
+import 'package:job_finder/l10n/app_localizations.dart';
 
 class JobApplyScreen extends StatefulWidget {
   final String jobId;
@@ -22,6 +24,11 @@ class _JobApplyScreenState extends State<JobApplyScreen> {
   int _selectedProfileIndex = 0;
   int _selectedResumeIndex = 0;
   bool _isSubmitting = false;
+
+  // CV Source: 0 = Use App CV (Case 1), 1 = Upload from Phone (Case 2)
+  int _cvSourceIndex = 0;
+  String? _uploadedCVFileName;
+  String? _uploadedCoverLetterFileName;
 
   final List<Map<String, String>> _profiles = [
     {'name': 'Chem Bunjok', 'subtitle': 'job finder'},
@@ -60,7 +67,7 @@ class _JobApplyScreenState extends State<JobApplyScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Apply Now',
+          context.tr('apply_now'),
           style: GoogleFonts.poppins(
             fontSize: 17,
             fontWeight: FontWeight.w600,
@@ -78,7 +85,7 @@ class _JobApplyScreenState extends State<JobApplyScreen> {
 
             // ── Select a profile ──
             Text(
-              'Select a profile',
+              context.tr('personal_info'),
               style: GoogleFonts.poppins(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
@@ -157,9 +164,9 @@ class _JobApplyScreenState extends State<JobApplyScreen> {
             ),
             const SizedBox(height: 28),
 
-            // ── Select a resume ──
+            // ── CV Source Toggle ──
             Text(
-              'Select a resume',
+              context.tr('upload_resume'),
               style: GoogleFonts.poppins(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
@@ -169,69 +176,39 @@ class _JobApplyScreenState extends State<JobApplyScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: List.generate(_resumes.length, (index) {
-                final isSelected = _selectedResumeIndex == index;
-                return GestureDetector(
-                  onTap: () => setState(() => _selectedResumeIndex = index),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppColors.primary.withValues(alpha: 0.1)
-                          : isDark
-                          ? AppColors.darkCard
-                          : Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: isSelected
-                            ? AppColors.primary
-                            : isDark
-                            ? AppColors.darkDivider
-                            : Colors.grey.shade300,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (isSelected)
-                          Container(
-                            width: 18,
-                            height: 18,
-                            margin: const EdgeInsets.only(right: 6),
-                            decoration: const BoxDecoration(
-                              color: AppColors.success,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.check,
-                              size: 12,
-                              color: Colors.white,
-                            ),
-                          ),
-                        Text(
-                          _resumes[index],
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: isSelected
-                                ? AppColors.primary
-                                : isDark
-                                ? AppColors.darkTextPrimary
-                                : AppColors.textPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
+
+            // Toggle row: Use App CV / Upload from Phone
+            Container(
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkCard : const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.all(4),
+              child: Row(
+                children: [
+                  _cvToggleTab(
+                    index: 0,
+                    icon: Icons.description_outlined,
+                    label: context.tr('my_resume'),
+                    isDark: isDark,
                   ),
-                );
-              }),
+                  _cvToggleTab(
+                    index: 1,
+                    icon: Icons.upload_file_outlined,
+                    label: context.tr('upload_resume'),
+                    isDark: isDark,
+                  ),
+                ],
+              ),
             ),
+            const SizedBox(height: 16),
+
+            // Case 1: App-generated CV (existing resume selector)
+            if (_cvSourceIndex == 0) ..._buildAppCVSection(isDark),
+
+            // Case 2: Upload from phone
+            if (_cvSourceIndex == 1) ..._buildUploadSection(isDark),
+
             const SizedBox(height: 28),
 
             // ── Leave Your Message (Optional) ──
@@ -349,7 +326,7 @@ class _JobApplyScreenState extends State<JobApplyScreen> {
                         ),
                       )
                     : Text(
-                        'Apply Now',
+                        context.tr('apply_now'),
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -358,6 +335,301 @@ class _JobApplyScreenState extends State<JobApplyScreen> {
               ),
             ),
             const SizedBox(height: 32),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Toggle tab widget ──
+  Widget _cvToggleTab({
+    required int index,
+    required IconData icon,
+    required String label,
+    required bool isDark,
+  }) {
+    final isSelected = _cvSourceIndex == index;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() {
+          _cvSourceIndex = index;
+          _uploadedCVFileName = null;
+          _uploadedCoverLetterFileName = null;
+        }),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.primary : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: isSelected
+                    ? Colors.white
+                    : isDark
+                    ? AppColors.darkTextSecondary
+                    : AppColors.textSecondary,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: isSelected
+                      ? Colors.white
+                      : isDark
+                      ? AppColors.darkTextSecondary
+                      : AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Case 1: App-generated CV section ──
+  List<Widget> _buildAppCVSection(bool isDark) {
+    return [
+      Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.darkCard : const Color(0xFFF0F9FF),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isDark ? AppColors.darkDivider : const Color(0xFFBAE6FD),
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.description_outlined,
+                color: AppColors.primary,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _resumes[_selectedResumeIndex],
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: isDark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.textPrimary,
+                    ),
+                  ),
+                  Text(
+                    'Auto-generated CV from your profile',
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.success.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.check_circle,
+                    color: AppColors.success,
+                    size: 14,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Ready',
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.success,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    ];
+  }
+
+  // ── Case 2: Upload from phone section ──
+  List<Widget> _buildUploadSection(bool isDark) {
+    return [
+      // Upload CV
+      _uploadFileButton(
+        label: 'Upload CV / Resume',
+        subtitle: 'PDF, DOC, DOCX (max 10MB)',
+        icon: Icons.picture_as_pdf_outlined,
+        iconColor: const Color(0xFFDC2626),
+        fileName: _uploadedCVFileName,
+        isDark: isDark,
+        onTap: () async {
+          final result = await FilePicker.platform.pickFiles(
+            type: FileType.custom,
+            allowedExtensions: ['pdf', 'doc', 'docx'],
+          );
+          if (result != null && result.files.isNotEmpty) {
+            setState(() {
+              _uploadedCVFileName = result.files.first.name;
+            });
+          }
+        },
+      ),
+      const SizedBox(height: 12),
+      // Upload Cover Letter
+      _uploadFileButton(
+        label: 'Upload Cover Letter',
+        subtitle: 'PDF, DOC, DOCX (Optional)',
+        icon: Icons.article_outlined,
+        iconColor: const Color(0xFF7C3AED),
+        fileName: _uploadedCoverLetterFileName,
+        isDark: isDark,
+        onTap: () async {
+          final result = await FilePicker.platform.pickFiles(
+            type: FileType.custom,
+            allowedExtensions: ['pdf', 'doc', 'docx'],
+          );
+          if (result != null && result.files.isNotEmpty) {
+            setState(() {
+              _uploadedCoverLetterFileName = result.files.first.name;
+            });
+          }
+        },
+      ),
+      const SizedBox(height: 8),
+      Row(
+        children: [
+          const Icon(Icons.info_outline, size: 13, color: Color(0xFF64748B)),
+          const SizedBox(width: 6),
+          Text(
+            'Files from Google Drive, phone storage, or any app',
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              color: const Color(0xFF64748B),
+            ),
+          ),
+        ],
+      ),
+    ];
+  }
+
+  Widget _uploadFileButton({
+    required String label,
+    required String subtitle,
+    required IconData icon,
+    required Color iconColor,
+    required String? fileName,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    final isUploaded = fileName != null;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isUploaded
+              ? AppColors.success.withValues(alpha: 0.06)
+              : isDark
+              ? AppColors.darkCard
+              : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isUploaded
+                ? AppColors.success
+                : isDark
+                ? AppColors.darkDivider
+                : Colors.grey.shade300,
+            width: isUploaded ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: isUploaded
+                    ? AppColors.success.withValues(alpha: 0.1)
+                    : iconColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                isUploaded ? Icons.check_circle_outline : icon,
+                color: isUploaded ? AppColors.success : iconColor,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isUploaded ? fileName : label,
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: isUploaded
+                          ? AppColors.success
+                          : isDark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.textPrimary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    isUploaded ? 'Uploaded successfully ✓' : subtitle,
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      color: isUploaded
+                          ? AppColors.success
+                          : isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              isUploaded ? Icons.edit_outlined : Icons.upload_outlined,
+              size: 18,
+              color: isUploaded
+                  ? AppColors.success
+                  : isDark
+                  ? AppColors.darkTextSecondary
+                  : Colors.grey,
+            ),
           ],
         ),
       ),
